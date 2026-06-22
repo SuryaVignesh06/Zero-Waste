@@ -23,8 +23,21 @@ export function Login() {
     }, 1500);
   };
 
+  const handleBack = () => {
+    setScreen("role-select");
+  };
+
   return (
     <div className="flex h-full flex-col" style={{ background: "#F7F5F0" }}>
+      {/* Back button */}
+      <button
+        onClick={handleBack}
+        className="absolute left-4 top-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/20 backdrop-blur-md"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M19 12H5M12 19l-7-7 7-7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
       {/* Top visual zone — 44% */}
       <div
         className="relative flex flex-col items-center justify-center gap-4"

@@ -109,11 +109,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   screen: "onboarding",
   prevScreen: null,
   role: null,
-  setRole: (r) => set({ role: r, screen: "home" }),
+  setRole: (r) => set({ role: r, screen: "login" }),
   setScreen: (s) => set((state) => ({ screen: s, prevScreen: state.screen })),
 
   onboarded: false,
-  completeOnboarding: () => set({ onboarded: true, screen: "login" }),
+  completeOnboarding: () => set({ onboarded: true, screen: "role-select" }),
 
   phoneNumber: "",
   setPhoneNumber: (p) => set({ phoneNumber: p }),

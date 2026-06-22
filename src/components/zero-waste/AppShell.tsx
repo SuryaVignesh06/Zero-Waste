@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { Onboarding } from "./Onboarding";
 import { Login } from "./Login";
@@ -22,29 +21,18 @@ import { AiAssistant } from "./AiAssistant";
 export function AppShell() {
   const { screen, role, setScreen } = useAppStore();
 
-  useEffect(() => {
-    if (role) {
-      switch (role) {
-        case "shop": setScreen("shop-dashboard"); break;
-        case "ngo": setScreen("ngo-feed"); break;
-        case "volunteer": setScreen("volunteer-map"); break;
-        default: setScreen("home");
-      }
-    }
-  }, [role]);
-
   // Full-screen flows (no bottom nav)
   if (screen === "onboarding") {
-    return <div style={{ flex: 1, minHeight: 0 }}><Onboarding /></div>;
+    return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><Onboarding /></div>;
   }
   if (screen === "login") {
-    return <div style={{ flex: 1, minHeight: 0 }}><Login /></div>;
+    return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><Login /></div>;
   }
   if (screen === "otp") {
-    return <div style={{ flex: 1, minHeight: 0 }}><Otp /></div>;
+    return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><Otp /></div>;
   }
   if (screen === "role-select") {
-    return <div style={{ flex: 1, minHeight: 0 }}><RoleSelect /></div>;
+    return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><RoleSelect /></div>;
   }
 
   const renderScreen = () => {

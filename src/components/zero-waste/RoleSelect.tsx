@@ -35,16 +35,17 @@ export function RoleSelect() {
   const setRole = useAppStore((s) => s.setRole);
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }} className="overflow-y-auto bg-[#F7F5F0]">
-      <div className="px-6 pt-16 pb-8">
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-[30px] font-bold text-[#0A0A0A]"
-          style={{ fontFamily: "var(--font-outfit)" }}
-        >
-          How will you use Zero-Waste?
-        </motion.h1>
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }} className="bg-[#F7F5F0]">
+      <main style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div className="px-6 pt-16 pb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[30px] font-bold text-[#0A0A0A]"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            How will you use Zero-Waste?
+          </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -162,6 +163,7 @@ export function RoleSelect() {
           </div>
         ))}
       </motion.div>
+      </main>
     </div>
   );
 }
