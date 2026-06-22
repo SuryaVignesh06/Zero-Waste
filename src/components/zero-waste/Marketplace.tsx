@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
 import { ProductCard } from "./ProductCard";
-import { Search, SlidersHorizontal, Mic, X } from "lucide-react";
+import { formatINR } from "./Countdown";
+import { Search, SlidersHorizontal, Mic, ShoppingBag } from "lucide-react";
+
+const displayFont = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 const FILTERS = [
   { id: "all", label: "All" },
   { id: "expiring-today", label: "Expiring today" },
   { id: "under-50", label: "Under ₹50" },
-  { id: "50-100", label: "₹50 - ₹100" },
   { id: "over-50-off", label: "Over 50% off" },
   { id: "within-1km", label: "Within 1km" },
   { id: "ai-match", label: "AI matched" },
@@ -18,6 +20,9 @@ const FILTERS = [
 
 export function Marketplace() {
   const products = useAppStore((s) => s.products);
+  const setCartOpen = useAppStore((s) => s.setCartOpen);
+  const cartCount = useAppStore((s) => s.cartCount);
+  const cartTotal = useAppStore((s) => s.cartTotal);
   const [activeFilter, setActiveFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<
@@ -46,14 +51,10 @@ export function Marketplace() {
       case "under-50":
         list = list.filter((p) => p.discountedPrice < 50);
         break;
-      case "50-100":
-        list = list.filter(
-          (p) => p.discountedPrice >= 50 && p.discountedPrice <= 100
-        );
-        break;
       case "over-50-off":
         list = list.filter(
-          (p) => (p.originalPrice - p.discountedPrice) / p.originalPrice > 0.5
+          (p) =>
+            (p.originalPrice - p.discountedPrice) / p.originalPrice > 0.5
         );
         break;
       case "within-1km":
@@ -81,22 +82,21 @@ export function Marketplace() {
     return list;
   }, [products, activeFilter, query, sort]);
 
+  const hasItems = cartCount() > 0;
+
   return (
-    <div className="relative flex h-full flex-col">
-      {/* Aurora background */}
-      <div className="absolute inset-0 -z-10 bg-zw-aurora" />
-      <div className="blob bg-zw-primary-300/30 zw-float-slow" style={{ width: 250, height: 250, top: "10%", right: "-20%" }} />
-
-      {/* Header */}
-      <div className="sticky top-0 z-30 px-5 pb-3 pt-4">
-        <div className="absolute inset-0 -z-10 bg-white/60 backdrop-blur-xl border-b border-zw-border-strong" />
-
-        <div className="mb-3 flex items-center justify-between">
+    <div className="flex h-full flex-col bg-[#FCFCF9]">
+      {/* Header — pill search bar */}
+      <div className="px-5 pb-3 pt-5">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h1 className="font-display text-[22px] font-bold tracking-tight text-zw-text-primary">
+            <h1
+              className="text-[24px] font-bold tracking-tight text-[#111827]"
+              style={{ fontFamily: displayFont }}
+            >
               Marketplace
             </h1>
-            <p className="text-[11px] text-zw-text-secondary">
+            <p className="text-[11px] text-[#64748b]">
               {filtered.length} fresh deals near you
             </p>
           </div>
@@ -104,7 +104,8 @@ export function Marketplace() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as any)}
-              className="appearance-none rounded-full glass py-2 pl-3 pr-7 text-[12px] font-semibold text-zw-text-primary"
+              className="appearance-none rounded-full bg-white py-2 pl-3 pr-8 text-[12px] font-semibold text-[#111827]"
+              style={{ boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}
             >
               <option value="relevance">Relevance</option>
               <option value="price-low">Price: Low to High</option>
@@ -112,7 +113,7 @@ export function Marketplace() {
               <option value="expiry">Expiring soonest</option>
             </select>
             <svg
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2"
+              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2"
               width="10"
               height="6"
               viewBox="0 0 10 6"
@@ -120,7 +121,7 @@ export function Marketplace() {
             >
               <path
                 d="M1 1L5 5L9 1"
-                stroke="currentColor"
+                stroke="#64748b"
                 strokeWidth="1.5"
                 strokeLinecap="round"
               />
@@ -128,76 +129,145 @@ export function Marketplace() {
           </div>
         </div>
 
-        {/* Search bar */}
+        {/* Large pill search bar */}
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search
-              size={16}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zw-text-muted"
-            />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products, shops..."
-              className="h-12 w-full rounded-2xl glass pl-10 pr-12 text-[13px] text-zw-text-primary placeholder:text-zw-text-muted focus:outline-none focus:ring-2 focus:ring-zw-primary-400/40"
-            />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-zw-primary-500 to-zw-primary-700 text-white shadow-sm">
-              <Mic size={14} />
-            </button>
+          <div
+            className="relative flex-1"
+            style={{
+              borderRadius: 28,
+              boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)",
+            }}
+          >
+            <div className="flex h-14 items-center rounded-[28px] bg-white pl-4 pr-2">
+              <Search size={18} className="text-[#94a3b8]" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search products, shops..."
+                className="h-full flex-1 bg-transparent px-3 text-[13px] text-[#111827] placeholder:text-[#94a3b8] focus:outline-none"
+              />
+              <button
+                className="flex h-10 w-10 items-center justify-center rounded-full text-white"
+                style={{
+                  background: "linear-gradient(135deg, #16a34a, #15803d)",
+                }}
+              >
+                <Mic size={14} />
+              </button>
+            </div>
           </div>
-          <button className="flex h-12 w-12 items-center justify-center rounded-2xl glass text-zw-text-secondary active:scale-95">
+          <button
+            className="flex h-14 w-14 items-center justify-center rounded-[22px] bg-white text-[#64748b] active:scale-95"
+            style={{ boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}
+          >
             <SlidersHorizontal size={18} />
           </button>
         </div>
 
         {/* Filter chips */}
-        <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 no-scrollbar">
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setActiveFilter(f.id)}
-              className={`relative flex-shrink-0 rounded-full px-4 py-2 text-[12px] font-semibold transition-all ${
-                activeFilter === f.id
-                  ? "text-white shadow-md"
-                  : "glass text-zw-text-secondary hover:text-zw-text-primary"
-              }`}
-              style={
-                activeFilter === f.id
-                  ? {
-                      background:
-                        "linear-gradient(135deg, var(--color-zw-primary-600), var(--color-zw-primary-800))",
-                    }
-                  : undefined
-              }
-            >
-              {f.label}
-            </button>
-          ))}
+        <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 no-scrollbar">
+          {FILTERS.map((f) => {
+            const active = activeFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setActiveFilter(f.id)}
+                className="flex-shrink-0 rounded-full px-4 py-2 text-[12px] font-semibold transition-all active:scale-95"
+                style={{
+                  background: active
+                    ? "linear-gradient(135deg, #16a34a, #15803d)"
+                    : "#ffffff",
+                  color: active ? "#ffffff" : "#64748b",
+                  boxShadow: active
+                    ? "0 4px 12px rgba(22, 163, 74, 0.25)"
+                    : "0 2px 8px rgba(17, 24, 39, 0.04)",
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Results */}
-      <div className="flex-1 overflow-y-auto zw-scroll px-5 pb-32 pt-4">
+      {/* Results — scrollable */}
+      <main className="flex-1 overflow-y-auto zw-scroll px-5 pb-40 pt-4">
         {filtered.length === 0 ? (
           <div className="mt-20 flex flex-col items-center text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full glass">
-              <Search size={28} className="text-zw-text-muted" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white" style={{ boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}>
+              <Search size={28} className="text-[#94a3b8]" />
             </div>
-            <p className="mt-4 font-display text-base font-bold text-zw-text-primary">
+            <p
+              className="mt-4 text-base font-bold text-[#111827]"
+              style={{ fontFamily: displayFont }}
+            >
               No products found
             </p>
-            <p className="text-[12px] text-zw-text-muted">
+            <p className="text-[12px] text-[#64748b]">
               Try a different filter or search term
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             {filtered.map((p, i) => (
               <ProductCard key={p.id} product={p} index={i} />
             ))}
           </div>
         )}
-      </div>
+      </main>
+
+      {/* Bottom cart preview — Blinkit style */}
+      {hasItems && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className="absolute inset-x-4 bottom-24 z-30"
+        >
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setCartOpen(true)}
+            className="flex w-full items-center justify-between text-white"
+            style={{
+              borderRadius: 28,
+              background: "linear-gradient(135deg, #16a34a, #15803d)",
+              boxShadow: "0 8px 32px rgba(22, 163, 74, 0.4)",
+            }}
+          >
+            <div className="flex items-center gap-3 px-5 py-3.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/25">
+                <ShoppingBag size={16} className="text-white" />
+              </div>
+              <div className="text-left">
+                <div
+                  className="text-[14px] font-bold"
+                  style={{ fontFamily: displayFont }}
+                >
+                  {cartCount()} items
+                </div>
+                <div className="text-[10px] text-white/80">
+                  {formatINR(cartTotal())}
+                </div>
+              </div>
+            </div>
+            <div
+              className="flex items-center gap-1 px-5 py-3.5 text-[13px] font-bold"
+              style={{ fontFamily: displayFont }}
+            >
+              View Cart
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path
+                  d="M5 3L9 7L5 11"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </motion.button>
+        </motion.div>
+      )}
     </div>
   );
 }

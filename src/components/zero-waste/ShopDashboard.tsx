@@ -23,6 +23,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+const displayFont = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+
 const STATUS_FLOW = ["new", "accepted", "packing", "ready", "completed"];
 const STATUS_LABELS: Record<string, string> = {
   new: "New",
@@ -33,9 +35,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function ShopDashboard() {
-  const [tab, setTab] = useState<"overview" | "orders" | "inventory">(
-    "overview"
-  );
+  const [tab, setTab] = useState<"overview" | "orders" | "inventory">("overview");
   const shopListings = useAppStore((s) => s.shopListings);
   const shopOrders = useAppStore((s) => s.shopOrders);
   const updateOrderStatus = useAppStore((s) => s.updateOrderStatus);
@@ -47,28 +47,33 @@ export function ShopDashboard() {
   const wastePrevented = todaySold * 0.4;
 
   return (
-    <div className="relative flex h-full flex-col">
-      <div className="absolute inset-0 -z-10 bg-zw-aurora" />
-      <div className="blob bg-zw-accent-300/30 zw-float" style={{ width: 240, height: 240, top: "10%", right: "-15%" }} />
-
+    <div className="flex h-full flex-col bg-[#FCFCF9]">
       {/* Header */}
-      <div className="sticky top-0 z-30 px-5 pb-3 pt-4">
-        <div className="absolute inset-0 -z-10 bg-white/60 backdrop-blur-xl border-b border-zw-border-strong" />
+      <div className="bg-white px-5 pb-4 pt-5" style={{ boxShadow: "0 2px 12px rgba(17, 24, 39, 0.04)" }}>
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-zw-accent-500 to-zw-accent-700 shadow-md">
-            <Store size={18} className="text-white" />
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-2xl"
+            style={{
+              background: "linear-gradient(135deg, #f59e0b, #d97706)",
+              boxShadow: "0 4px 12px rgba(245, 158, 11, 0.3)",
+            }}
+          >
+            <Store size={20} className="text-white" />
           </div>
           <div>
-            <h1 className="font-display text-base font-bold tracking-tight text-zw-text-primary">
+            <h1
+              className="text-base font-bold tracking-tight text-[#111827]"
+              style={{ fontFamily: displayFont }}
+            >
               FreshMart Anna Nagar
             </h1>
-            <div className="flex items-center gap-2 text-[11px] text-zw-text-secondary">
+            <div className="flex items-center gap-2 text-[11px] text-[#64748b]">
               <span className="flex items-center gap-1">
-                <Star size={10} className="fill-zw-warning text-zw-warning" />
+                <Star size={10} className="fill-[#f59e0b] text-[#f59e0b]" />
                 4.6
               </span>
               <span>·</span>
-              <span className="rounded-full bg-zw-primary-100 px-2 py-0.5 font-semibold text-zw-primary-700">
+              <span className="rounded-full bg-[#f0fdf4] px-2 py-0.5 font-semibold text-[#16A34A]">
                 Verified
               </span>
             </div>
@@ -76,23 +81,22 @@ export function ShopDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="mt-3 flex gap-1 rounded-2xl glass p-1">
+        <div className="mt-4 flex gap-1 rounded-full bg-[#f1f5f9] p-1">
           {[
             { id: "overview", label: "Overview" },
-            {
-              id: "orders",
-              label: `Orders ${newOrders.length > 0 ? `(${newOrders.length})` : ""}`,
-            },
+            { id: "orders", label: `Orders ${newOrders.length > 0 ? `(${newOrders.length})` : ""}` },
             { id: "inventory", label: "Inventory" },
           ].map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id as any)}
-              className={`relative flex-1 rounded-xl px-3 py-1.5 text-[12px] font-semibold transition-all ${
-                tab === t.id
-                  ? "bg-gradient-to-br from-zw-primary-500 to-zw-primary-700 text-white shadow-sm"
-                  : "text-zw-text-muted"
-              }`}
+              className="flex-1 rounded-full px-3 py-2 text-[12px] font-semibold transition-all"
+              style={{
+                background: tab === t.id
+                  ? "linear-gradient(135deg, #16a34a, #15803d)"
+                  : "transparent",
+                color: tab === t.id ? "#ffffff" : "#64748b",
+              }}
             >
               {t.label}
             </button>
@@ -100,7 +104,7 @@ export function ShopDashboard() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto zw-scroll px-5 pb-32 pt-4">
+      <main className="flex-1 overflow-y-auto zw-scroll px-5 pb-32 pt-4">
         <AnimatePresence mode="wait">
           {tab === "overview" && (
             <motion.div
@@ -110,115 +114,148 @@ export function ShopDashboard() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25 }}
             >
-              {/* Stats grid */}
+              {/* Stats grid — alternating pastel backgrounds */}
               <div className="grid grid-cols-2 gap-3">
                 <StatCard
                   icon={<ShoppingBag size={16} />}
                   label="Today's Orders"
                   value={String(shopOrders.length)}
                   trend="+3"
-                  gradient="from-emerald-50 to-white"
-                  color="text-zw-primary-700"
-                  iconBg="bg-gradient-to-br from-zw-primary-500 to-zw-primary-700"
+                  bg="#f0fdf4"
+                  iconBg="linear-gradient(135deg, #16a34a, #15803d)"
+                  color="#16A34A"
                 />
                 <StatCard
                   icon={<TrendingUp size={16} />}
                   label="Revenue Today"
                   value={formatINR(todayRevenue)}
                   trend="+12%"
-                  gradient="from-amber-50 to-white"
-                  color="text-zw-accent-700"
-                  iconBg="bg-gradient-to-br from-zw-accent-500 to-zw-accent-700"
+                  bg="#fffbeb"
+                  iconBg="linear-gradient(135deg, #f59e0b, #d97706)"
+                  color="#f59e0b"
                 />
                 <StatCard
                   icon={<Package size={16} />}
                   label="Active Listings"
                   value={String(shopListings.length)}
                   trend="2 expiring"
-                  gradient="from-teal-50 to-white"
-                  color="text-zw-success"
-                  iconBg="bg-gradient-to-br from-teal-500 to-emerald-700"
+                  bg="#eff6ff"
+                  iconBg="linear-gradient(135deg, #3b82f6, #1d4ed8)"
+                  color="#3b82f6"
                 />
                 <StatCard
                   icon={<Leaf size={16} />}
                   label="Waste Prevented"
                   value={`${wastePrevented.toFixed(1)}kg`}
                   trend="this week"
-                  gradient="from-pink-50 to-white"
-                  color="text-zw-pink-500"
-                  iconBg="bg-gradient-to-br from-zw-pink-400 to-zw-accent-500"
+                  bg="#fdf2f8"
+                  iconBg="linear-gradient(135deg, #ec4899, #be185d)"
+                  color="#ec4899"
                 />
               </div>
 
               {/* AI insight card */}
               <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mt-4 overflow-hidden rounded-3xl glass glass-inset p-4"
+                className="mt-4 overflow-hidden bg-white p-5"
+                style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}
               >
                 <div className="flex items-center gap-2">
                   <div className="zw-ai-border h-8 w-8 rounded-xl p-[1.5px]">
                     <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-white">
-                      <Sparkles size={14} className="text-zw-primary-700" />
+                      <Sparkles size={14} className="text-[#16A34A]" />
                     </div>
                   </div>
-                  <span className="text-[13px] font-bold text-zw-text-primary">
+                  <span
+                    className="text-[13px] font-bold text-[#111827]"
+                    style={{ fontFamily: displayFont }}
+                  >
                     AI Demand Forecast
                   </span>
                 </div>
-                <p className="mt-2 text-[12px] leading-relaxed text-zw-text-secondary">
+                <p className="mt-2 text-[12px] leading-relaxed text-[#64748b]">
                   Based on your sales pattern, <b>3 milk packs</b> and{" "}
                   <b>2 vegetable packs</b> are likely to remain unsold tomorrow.
                   Pre-list them at discount now.
                 </p>
-                <button className="mt-3 rounded-xl glass-primary px-3 py-1.5 text-[11px] font-semibold text-white">
+                <button
+                  className="mt-3 text-[11px] font-semibold text-white"
+                  style={{
+                    borderRadius: 22,
+                    background: "linear-gradient(135deg, #16a34a, #15803d)",
+                    padding: "8px 16px",
+                  }}
+                >
                   Pre-list with AI suggestion
                 </button>
               </motion.div>
 
               {/* Quick action */}
-              <button className="mt-4 flex w-full items-center justify-between rounded-3xl glass glass-inset p-4 text-left active:scale-98">
+              <button className="mt-4 flex w-full items-center justify-between bg-white p-5 text-left active:scale-98" style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-zw-primary-500 to-zw-primary-700 text-white shadow-md">
+                  <div
+                    className="flex h-10 w-10 items-center justify-center rounded-2xl text-white"
+                    style={{
+                      background: "linear-gradient(135deg, #16a34a, #15803d)",
+                    }}
+                  >
                     <Plus size={18} />
                   </div>
                   <div>
-                    <div className="text-[13px] font-bold text-zw-text-primary">
+                    <div
+                      className="text-[13px] font-bold text-[#111827]"
+                      style={{ fontFamily: displayFont }}
+                    >
                       List new near-expiry product
                     </div>
-                    <div className="text-[11px] text-zw-text-muted">
+                    <div className="text-[11px] text-[#94a3b8]">
                       Scan barcode or add manually
                     </div>
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-zw-text-muted" />
+                <ChevronRight size={16} className="text-[#94a3b8]" />
               </button>
 
               {/* Expiring soon */}
-              <h3 className="mt-5 mb-2 font-display text-[12px] font-bold uppercase tracking-wide text-zw-text-secondary">
+              <h2 className="mt-5 mb-3 text-[12px] font-bold uppercase tracking-wide text-[#64748b]">
                 Expiring Soon
-              </h3>
+              </h2>
               <div className="space-y-2">
                 {shopListings
                   .filter((l) => l.daysToExpiry <= 2)
                   .map((l) => (
                     <div
                       key={l.id}
-                      className="flex items-center gap-3 rounded-2xl bg-gradient-to-br from-zw-accent-50 to-white border border-zw-accent-200/50 p-3"
+                      className="flex items-center gap-3 p-3"
+                      style={{
+                        borderRadius: 22,
+                        background: "linear-gradient(135deg, #fef3c7, #ffffff)",
+                      }}
                     >
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-zw-accent-500 to-zw-accent-700 text-white shadow-sm">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f59e0b] text-white">
                         <AlertCircle size={16} />
                       </div>
                       <div className="flex-1">
-                        <div className="text-[12px] font-bold text-zw-text-primary">
+                        <div
+                          className="text-[12px] font-bold text-[#111827]"
+                          style={{ fontFamily: displayFont }}
+                        >
                           {l.name}
                         </div>
-                        <div className="text-[11px] text-zw-accent-700">
+                        <div className="text-[11px] text-[#92400e]">
                           Expires in {l.daysToExpiry} day · {l.qtyLeft} left
                         </div>
                       </div>
-                      <button className="rounded-xl bg-gradient-to-br from-zw-accent-500 to-zw-accent-700 px-3 py-1.5 text-[11px] font-bold text-white shadow-sm">
+                      <button
+                        className="text-[11px] font-bold text-white"
+                        style={{
+                          borderRadius: 22,
+                          background: "linear-gradient(135deg, #f59e0b, #d97706)",
+                          padding: "8px 14px",
+                        }}
+                      >
                         Boost
                       </button>
                     </div>
@@ -239,20 +276,24 @@ export function ShopDashboard() {
               {activeOrders.map((order, i) => (
                 <motion.div
                   key={order.id}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 }}
-                  className="overflow-hidden rounded-3xl glass glass-inset"
+                  className="overflow-hidden bg-white"
+                  style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}
                 >
-                  <div className="flex items-center justify-between border-b border-zw-divider p-3">
+                  <div className="flex items-center justify-between border-b border-[#f1f5f9] p-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-display text-[13px] font-bold text-zw-text-primary">
+                        <span
+                          className="text-[13px] font-bold text-[#111827]"
+                          style={{ fontFamily: displayFont }}
+                        >
                           {order.customerName}
                         </span>
                         <StatusPill status={order.status} />
                       </div>
-                      <div className="mt-0.5 flex items-center gap-2 text-[10px] text-zw-text-muted">
+                      <div className="mt-0.5 flex items-center gap-2 text-[10px] text-[#94a3b8]">
                         <span>#{order.id.toUpperCase()}</span>
                         <span>·</span>
                         <span className="flex items-center gap-0.5">
@@ -265,22 +306,25 @@ export function ShopDashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-display text-base font-bold text-zw-text-primary">
+                      <div
+                        className="text-base font-bold text-[#111827]"
+                        style={{ fontFamily: displayFont }}
+                      >
                         {formatINR(order.total)}
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-3">
+                  <div className="p-4">
                     {order.items.map((item, ii) => (
                       <div
                         key={ii}
                         className="flex justify-between py-1 text-[12px]"
                       >
-                        <span className="text-zw-text-secondary">
+                        <span className="text-[#64748b]">
                           <b>{item.qty}x</b> {item.name}
                         </span>
-                        <span className="font-medium text-zw-text-primary">
+                        <span className="font-medium text-[#111827]">
                           {formatINR(item.price * item.qty)}
                         </span>
                       </div>
@@ -288,20 +332,21 @@ export function ShopDashboard() {
                   </div>
 
                   {order.status === "new" && (
-                    <div className="flex gap-2 border-t border-zw-divider p-3">
+                    <div className="flex gap-2 border-t border-[#f1f5f9] p-4">
                       <button
-                        onClick={() =>
-                          updateOrderStatus(order.id, "accepted")
-                        }
-                        className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl glass text-[12px] font-semibold text-zw-text-secondary"
+                        onClick={() => updateOrderStatus(order.id, "accepted")}
+                        className="flex h-10 flex-1 items-center justify-center gap-1.5 bg-[#f1f5f9] text-[12px] font-semibold text-[#64748b]"
+                        style={{ borderRadius: 22 }}
                       >
                         <X size={14} /> Decline
                       </button>
                       <button
-                        onClick={() =>
-                          updateOrderStatus(order.id, "accepted")
-                        }
-                        className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-xl glass-primary text-[12px] font-semibold text-white"
+                        onClick={() => updateOrderStatus(order.id, "accepted")}
+                        className="flex h-10 flex-1 items-center justify-center gap-1.5 text-[12px] font-semibold text-white"
+                        style={{
+                          borderRadius: 22,
+                          background: "linear-gradient(135deg, #16a34a, #15803d)",
+                        }}
                       >
                         <Check size={14} strokeWidth={3} /> Accept
                       </button>
@@ -309,18 +354,19 @@ export function ShopDashboard() {
                   )}
 
                   {order.status !== "new" && order.status !== "completed" && (
-                    <div className="border-t border-zw-divider p-3">
+                    <div className="border-t border-[#f1f5f9] p-4">
                       <button
                         onClick={() => {
                           const nextIdx = STATUS_FLOW.indexOf(order.status) + 1;
                           if (nextIdx < STATUS_FLOW.length) {
-                            updateOrderStatus(
-                              order.id,
-                              STATUS_FLOW[nextIdx]
-                            );
+                            updateOrderStatus(order.id, STATUS_FLOW[nextIdx]);
                           }
                         }}
-                        className="flex h-10 w-full items-center justify-center gap-1.5 rounded-xl glass-primary text-[12px] font-semibold text-white"
+                        className="flex h-10 w-full items-center justify-center gap-1.5 text-[12px] font-semibold text-white"
+                        style={{
+                          borderRadius: 22,
+                          background: "linear-gradient(135deg, #16a34a, #15803d)",
+                        }}
                       >
                         Mark as{" "}
                         {
@@ -342,10 +388,13 @@ export function ShopDashboard() {
 
               {activeOrders.length === 0 && (
                 <div className="mt-20 flex flex-col items-center text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full glass">
-                    <Check size={28} className="text-zw-primary-600" />
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#f0fdf4]">
+                    <Check size={32} className="text-[#16A34A]" />
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-zw-text-primary">
+                  <p
+                    className="mt-4 text-base font-bold text-[#111827]"
+                    style={{ fontFamily: displayFont }}
+                  >
                     No active orders
                   </p>
                 </div>
@@ -368,50 +417,67 @@ export function ShopDashboard() {
                 return (
                   <motion.div
                     key={l.id}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="flex items-center gap-3 rounded-3xl glass glass-inset p-3"
+                    className="flex items-center gap-3 bg-white p-3"
+                    style={{ borderRadius: 28, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}
                   >
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${l.imageColor}`}
+                      className={`flex h-12 w-12 items-center justify-center bg-gradient-to-br ${l.imageColor}`}
+                      style={{ borderRadius: 22 }}
                     >
-                      <span className="font-display text-base font-bold text-white/80">
+                      <span
+                        className="text-base font-bold text-white/85"
+                        style={{ fontFamily: displayFont }}
+                      >
                         {l.name.charAt(0)}
                       </span>
                     </div>
                     <div className="flex-1">
-                      <div className="text-[13px] font-bold text-zw-text-primary">
+                      <div
+                        className="text-[13px] font-bold text-[#111827]"
+                        style={{ fontFamily: displayFont }}
+                      >
                         {l.name}
                       </div>
-                      <div className="text-[11px] text-zw-text-muted">
+                      <div className="text-[11px] text-[#94a3b8]">
                         {l.qtyLeft} left · {l.soldToday} sold today
                       </div>
                       <div className="mt-1 flex items-center gap-1.5">
-                        <span className="font-display text-[12px] font-bold text-zw-text-primary">
+                        <span
+                          className="text-[12px] font-bold text-[#111827]"
+                          style={{ fontFamily: displayFont }}
+                        >
                           {formatINR(l.discountedPrice)}
                         </span>
-                        <span className="text-[10px] text-zw-text-muted line-through">
+                        <span className="text-[10px] text-[#94a3b8] line-through">
                           {formatINR(l.originalPrice)}
                         </span>
                         <span
-                          className={`rounded-md px-1.5 py-0.5 text-[9px] font-bold ${
-                            isCritical
-                              ? "bg-zw-danger/15 text-zw-danger"
+                          className="rounded-md px-1.5 py-0.5 text-[9px] font-bold"
+                          style={{
+                            background: isCritical
+                              ? "#fef2f2"
                               : isWarning
-                                ? "bg-zw-warning/15 text-zw-warning"
-                                : "bg-zw-primary-100 text-zw-primary-800"
-                          }`}
+                                ? "#fef3c7"
+                                : "#f0fdf4",
+                            color: isCritical
+                              ? "#ef4444"
+                              : isWarning
+                                ? "#f59e0b"
+                                : "#16A34A",
+                          }}
                         >
                           {l.daysToExpiry}d left
                         </span>
                       </div>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <button className="flex h-7 w-7 items-center justify-center rounded-lg glass text-zw-text-secondary active:scale-90">
+                      <button className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#64748b] active:scale-90">
                         <Edit size={12} />
                       </button>
-                      <button className="flex h-7 w-7 items-center justify-center rounded-lg glass text-zw-text-muted active:scale-90">
+                      <button className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#f1f5f9] text-[#94a3b8] active:scale-90">
                         <Trash2 size={12} />
                       </button>
                     </div>
@@ -421,7 +487,7 @@ export function ShopDashboard() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </main>
     </div>
   );
 }
@@ -431,55 +497,66 @@ function StatCard({
   label,
   value,
   trend,
-  gradient,
-  color,
+  bg,
   iconBg,
+  color,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   trend: string;
-  gradient: string;
-  color: string;
+  bg: string;
   iconBg: string;
+  color: string;
 }) {
   return (
     <div
-      className={`rounded-3xl border border-white/60 bg-gradient-to-br ${gradient} p-3.5 shadow-sm backdrop-blur-md`}
+      className="p-4"
+      style={{
+        borderRadius: 28,
+        background: bg,
+      }}
     >
       <div className="flex items-center justify-between">
         <div
-          className={`flex h-8 w-8 items-center justify-center rounded-xl ${iconBg} text-white shadow-sm`}
+          className="flex h-8 w-8 items-center justify-center rounded-xl text-white"
+          style={{ background: iconBg }}
         >
           {icon}
         </div>
-        <span className={`text-[10px] font-medium ${color}`}>{trend}</span>
+        <span
+          className="text-[10px] font-semibold"
+          style={{ color }}
+        >
+          {trend}
+        </span>
       </div>
       <motion.div
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-2 font-display text-xl font-bold text-zw-text-primary"
+        className="mt-2 text-xl font-bold text-[#111827]"
+        style={{ fontFamily: displayFont }}
       >
         {value}
       </motion.div>
-      <div className="text-[10px] text-zw-text-muted">{label}</div>
+      <div className="text-[10px] text-[#64748b]">{label}</div>
     </div>
   );
 }
 
 function StatusPill({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    new: "bg-zw-accent-100 text-zw-accent-700",
-    accepted: "bg-zw-primary-100 text-zw-primary-800",
-    packing: "bg-amber-100 text-amber-700",
-    ready: "bg-emerald-100 text-emerald-700",
-    completed: "bg-zw-bg-muted text-zw-text-muted",
+  const styles: Record<string, { bg: string; color: string }> = {
+    new: { bg: "#fffbeb", color: "#f59e0b" },
+    accepted: { bg: "#f0fdf4", color: "#16A34A" },
+    packing: { bg: "#fef3c7", color: "#92400e" },
+    ready: { bg: "#dbeafe", color: "#1d4ed8" },
+    completed: { bg: "#f1f5f9", color: "#64748b" },
   };
+  const s = styles[status] || styles.new;
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
-        colors[status] || colors.new
-      }`}
+      className="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase"
+      style={{ background: s.bg, color: s.color }}
     >
       {STATUS_LABELS[status]}
     </span>

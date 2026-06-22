@@ -20,7 +20,11 @@ import {
   Utensils,
   GraduationCap,
   CalendarDays,
+  TrendingUp,
+  Package,
 } from "lucide-react";
+
+const displayFont = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 const DONOR_ICONS: Record<string, any> = {
   "marriage-hall": Building2,
@@ -38,42 +42,44 @@ export function NgoFeed() {
   const listed = donations.filter((d) => d.status === "listed");
 
   return (
-    <div className="relative flex h-full flex-col">
-      <div className="absolute inset-0 -z-10 bg-zw-aurora" />
-      <div className="blob bg-zw-accent-300/30 zw-float" style={{ width: 240, height: 240, top: "10%", right: "-15%" }} />
-
+    <div className="flex h-full flex-col bg-[#FCFCF9]">
       {/* Header */}
-      <div className="sticky top-0 z-30 px-5 pb-3 pt-4">
-        <div className="absolute inset-0 -z-10 bg-white/60 backdrop-blur-xl border-b border-zw-border-strong" />
+      <div className="bg-white px-5 pb-4 pt-5" style={{ boxShadow: "0 2px 12px rgba(17, 24, 39, 0.04)" }}>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-[22px] font-bold tracking-tight text-zw-text-primary">
+            <h1
+              className="text-[24px] font-bold tracking-tight text-[#111827]"
+              style={{ fontFamily: displayFont }}
+            >
               Rescue Feed
             </h1>
-            <p className="text-[11px] text-zw-text-secondary">
+            <p className="text-[11px] text-[#64748b]">
               {listed.length} surplus donations waiting
             </p>
           </div>
-          {/* View toggle */}
-          <div className="flex rounded-full glass p-1">
+          <div className="flex rounded-full bg-[#f1f5f9] p-1">
             <button
               onClick={() => setView("list")}
-              className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all ${
-                view === "list"
-                  ? "bg-gradient-to-br from-zw-primary-500 to-zw-primary-700 text-white shadow-sm"
-                  : "text-zw-text-muted"
-              }`}
+              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all"
+              style={{
+                background: view === "list"
+                  ? "linear-gradient(135deg, #16a34a, #15803d)"
+                  : "transparent",
+                color: view === "list" ? "#ffffff" : "#64748b",
+              }}
             >
               <List size={13} />
               List
             </button>
             <button
               onClick={() => setView("map")}
-              className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all ${
-                view === "map"
-                  ? "bg-gradient-to-br from-zw-primary-500 to-zw-primary-700 text-white shadow-sm"
-                  : "text-zw-text-muted"
-              }`}
+              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all"
+              style={{
+                background: view === "map"
+                  ? "linear-gradient(135deg, #16a34a, #15803d)"
+                  : "transparent",
+                color: view === "map" ? "#ffffff" : "#64748b",
+              }}
             >
               <MapIcon size={13} />
               Map
@@ -81,25 +87,30 @@ export function NgoFeed() {
           </div>
         </div>
 
-        {/* Urgent count banner */}
-        <div className="mt-3 flex items-center gap-2 rounded-2xl bg-gradient-to-r from-zw-accent-50 to-zw-accent-100 p-2.5 border border-zw-accent-200/50">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-zw-accent-500 to-zw-accent-700">
-            <Flame size={14} className="text-white" />
-          </div>
-          <div className="flex-1">
-            <span className="text-[12px] font-bold text-zw-accent-700">
-              2 urgent rescues
-            </span>
-            <span className="text-[11px] text-zw-accent-700/80">
-              {" "}
-              · expires within 2 hours
-            </span>
-          </div>
+        {/* Stats cards */}
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          <NgoStat
+            value={String(listed.length)}
+            label="Incoming"
+            color="#16A34A"
+            bg="#f0fdf4"
+          />
+          <NgoStat
+            value="2"
+            label="Urgent"
+            color="#ef4444"
+            bg="#fef2f2"
+          />
+          <NgoStat
+            value="148"
+            label="Served"
+            color="#3b82f6"
+            bg="#eff6ff"
+          />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto zw-scroll pb-32">
+      <main className="flex-1 overflow-y-auto zw-scroll pb-32">
         <AnimatePresence mode="wait">
           {view === "list" ? (
             <motion.div
@@ -107,83 +118,66 @@ export function NgoFeed() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="space-y-3 px-5 py-4"
+              className="space-y-4 px-5 py-4"
             >
               {listed.map((d, i) => {
                 const Icon = DONOR_ICONS[d.donorType] ?? Building2;
                 const hoursToExpiry =
                   (new Date(d.expiryDeadline).getTime() - Date.now()) / 3600000;
                 const isUrgent = hoursToExpiry < 2;
-                const isWarning = hoursToExpiry < 4 && !isUrgent;
 
                 return (
                   <motion.div
                     key={d.id}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.06, duration: 0.4 }}
-                    className={`overflow-hidden rounded-3xl glass glass-inset ${
-                      isUrgent ? "ring-2 ring-zw-danger/30" : ""
-                    }`}
+                    className="overflow-hidden bg-white"
+                    style={{
+                      borderRadius: 32,
+                      boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)",
+                    }}
                   >
-                    {/* Image strip with urgency bar */}
+                    {/* Image strip */}
                     <div
-                      className={`relative h-20 w-full overflow-hidden rounded-t-3xl bg-gradient-to-br ${d.imageColor}`}
+                      className={`relative h-20 w-full overflow-hidden bg-gradient-to-br ${d.imageColor}`}
+                      style={{ borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
                     >
-                      <div className="absolute -right-4 -top-4 h-16 w-16 rounded-full bg-white/30 blur-md" />
-                      <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md px-2.5 py-1 shadow-sm">
-                        <Icon size={11} className="text-zw-primary-700" />
-                        <span className="text-[10px] font-bold uppercase tracking-wide text-zw-primary-700">
+                      <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1" style={{ boxShadow: "0 2px 8px rgba(17, 24, 39, 0.1)" }}>
+                        <Icon size={11} className="text-[#16A34A]" />
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-[#16A34A]">
                           {d.donorType.replace("-", " ")}
                         </span>
                       </div>
                       {isUrgent && (
-                        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-zw-danger px-2.5 py-1 shadow-sm">
+                        <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-[#ef4444] px-2.5 py-1">
                           <Flame size={10} className="text-white" />
                           <span className="text-[10px] font-bold uppercase text-white">
                             Urgent
                           </span>
                         </div>
                       )}
-                      <div className="absolute bottom-2 right-3 flex items-center gap-1 rounded-full bg-zw-primary-900/85 backdrop-blur-md px-2 py-0.5">
+                      <div className="absolute bottom-2 right-3 flex items-center gap-1 rounded-full bg-[#111827]/90 px-2 py-0.5">
                         <Users size={10} className="text-white" />
                         <span className="text-[10px] font-bold text-white">
                           {d.servings} servings
                         </span>
                       </div>
-                      {/* Urgency bar */}
-                      <div className="absolute inset-x-0 bottom-0 h-1 bg-white/30">
-                        <motion.div
-                          initial={{ width: "100%" }}
-                          animate={{
-                            width: isUrgent
-                              ? ["100%", "40%", "100%"]
-                              : isWarning
-                                ? "60%"
-                                : "85%",
-                          }}
-                          transition={{
-                            duration: isUrgent ? 1.5 : 0.5,
-                            repeat: isUrgent ? Infinity : 0,
-                          }}
-                          className={`h-full ${
-                            isUrgent ? "bg-zw-danger" : "bg-zw-accent-500"
-                          }`}
-                        />
-                      </div>
                     </div>
 
                     {/* Body */}
-                    <div className="p-4">
-                      <h3 className="font-display text-[15px] font-bold tracking-tight text-zw-text-primary">
+                    <div className="p-5">
+                      <h3
+                        className="text-[15px] font-bold tracking-tight text-[#111827]"
+                        style={{ fontFamily: displayFont }}
+                      >
                         {d.title}
                       </h3>
-                      <p className="mt-0.5 line-clamp-2 text-[12px] text-zw-text-secondary">
+                      <p className="mt-1 line-clamp-2 text-[12px] text-[#64748b]">
                         {d.description}
                       </p>
 
-                      {/* Meta row */}
-                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-zw-text-secondary">
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#64748b]">
                         <div className="flex items-center gap-1">
                           <MapPin size={11} />
                           <span>{d.pickupDistanceKm}km away</span>
@@ -193,46 +187,44 @@ export function NgoFeed() {
                           <span>Pickup: 2 hrs</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Sparkles size={11} className="text-zw-primary-600" />
-                          <span>
-                            AI fresh: {Math.round(d.aiFreshnessScore * 100)}%
-                          </span>
+                          <Sparkles size={11} className="text-[#3b82f6]" />
+                          <span>AI fresh: {Math.round(d.aiFreshnessScore * 100)}%</span>
                         </div>
                       </div>
 
-                      {/* AI match score */}
                       {d.aiMatchScore && (
-                        <div className="mt-3 flex items-center justify-between rounded-2xl bg-gradient-to-br from-zw-primary-50 to-white p-2.5 border border-zw-primary-200/40">
+                        <div className="mt-3 flex items-center justify-between rounded-2xl bg-[#eff6ff] p-3">
                           <div className="flex items-center gap-2">
-                            <div className="zw-ai-border h-6 w-6 rounded-md p-[1.5px]">
-                              <div className="flex h-full w-full items-center justify-center rounded-[3px] bg-white">
-                                <Sparkles size={11} className="text-zw-primary-700" />
-                              </div>
-                            </div>
-                            <span className="text-[11px] font-bold text-zw-primary-900">
+                            <Sparkles size={13} className="text-[#3b82f6]" />
+                            <span
+                              className="text-[11px] font-bold text-[#111827]"
+                              style={{ fontFamily: displayFont }}
+                            >
                               AI Match Score
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-zw-primary-200">
+                            <div className="h-1.5 w-20 overflow-hidden rounded-full bg-[#bfdbfe]">
                               <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${d.aiMatchScore}%` }}
                                 transition={{ duration: 0.8, delay: 0.2 }}
-                                className="h-full bg-gradient-to-r from-zw-primary-500 to-zw-primary-700"
+                                className="h-full bg-[#3b82f6]"
                               />
                             </div>
-                            <span className="text-[11px] font-bold text-zw-primary-800">
+                            <span
+                              className="text-[11px] font-bold text-[#3b82f6]"
+                              style={{ fontFamily: displayFont }}
+                            >
                               {d.aiMatchScore}%
                             </span>
                           </div>
                         </div>
                       )}
 
-                      {/* Countdown + actions */}
-                      <div className="mt-3 flex items-center justify-between gap-3">
+                      <div className="mt-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-medium uppercase tracking-wide text-zw-text-muted">
+                          <span className="text-[10px] font-medium uppercase tracking-wide text-[#94a3b8]">
                             Expires in
                           </span>
                           <Countdown
@@ -241,13 +233,18 @@ export function NgoFeed() {
                           />
                         </div>
                         <div className="flex gap-2">
-                          <button className="flex h-9 w-9 items-center justify-center rounded-xl glass text-zw-text-muted active:scale-95">
+                          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fef2f2] text-[#ef4444] active:scale-90">
                             <X size={16} />
                           </button>
                           <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={() => acceptDonation(d.id)}
-                            className="flex h-9 items-center gap-1.5 rounded-xl glass-primary px-4 text-[12px] font-semibold text-white"
+                            className="flex h-10 items-center gap-1.5 px-4 text-[12px] font-semibold text-white"
+                            style={{
+                              borderRadius: 22,
+                              background: "linear-gradient(135deg, #16a34a, #15803d)",
+                              boxShadow: "0 4px 12px rgba(22, 163, 74, 0.25)",
+                            }}
                           >
                             <Check size={14} strokeWidth={3} />
                             Accept
@@ -261,13 +258,16 @@ export function NgoFeed() {
 
               {listed.length === 0 && (
                 <div className="mt-20 flex flex-col items-center text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full glass">
-                    <HeartHandshake size={28} className="text-zw-primary-600" />
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#f0fdf4]">
+                    <HeartHandshake size={32} className="text-[#16A34A]" />
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-zw-text-primary">
+                  <p
+                    className="mt-4 text-base font-bold text-[#111827]"
+                    style={{ fontFamily: displayFont }}
+                  >
                     All caught up!
                   </p>
-                  <p className="text-[12px] text-zw-text-muted">
+                  <p className="text-[12px] text-[#64748b]">
                     No active donations in your area
                   </p>
                 </div>
@@ -281,48 +281,22 @@ export function NgoFeed() {
               exit={{ opacity: 0 }}
               className="relative h-full"
             >
-              {/* Stylized map */}
               <div
-                className="relative h-[450px] bg-zw-bg-muted"
+                className="relative h-[450px] bg-[#f1f5f9]"
                 style={{
                   backgroundImage:
-                    "linear-gradient(0deg, rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)",
+                    "linear-gradient(0deg, #e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)",
                   backgroundSize: "40px 40px",
                 }}
               >
-                {/* Roads */}
-                <svg
-                  className="absolute inset-0 h-full w-full"
-                  preserveAspectRatio="none"
-                >
-                  <path
-                    d="M 0 80 L 100% 80"
-                    stroke="var(--color-zw-bg-surface)"
-                    strokeWidth="14"
-                  />
-                  <path
-                    d="M 0 200 L 100% 200"
-                    stroke="var(--color-zw-bg-surface)"
-                    strokeWidth="10"
-                  />
-                  <path
-                    d="M 0 350 L 100% 350"
-                    stroke="var(--color-zw-bg-surface)"
-                    strokeWidth="12"
-                  />
-                  <path
-                    d="M 80 0 L 80 100%"
-                    stroke="var(--color-zw-bg-surface)"
-                    strokeWidth="14"
-                  />
-                  <path
-                    d="M 240 0 L 240 100%"
-                    stroke="var(--color-zw-bg-surface)"
-                    strokeWidth="10"
-                  />
+                <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
+                  <path d="M 0 80 L 100% 80" stroke="#ffffff" strokeWidth="14" />
+                  <path d="M 0 200 L 100% 200" stroke="#ffffff" strokeWidth="10" />
+                  <path d="M 0 350 L 100% 350" stroke="#ffffff" strokeWidth="12" />
+                  <path d="M 80 0 L 80 100%" stroke="#ffffff" strokeWidth="14" />
+                  <path d="M 240 0 L 240 100%" stroke="#ffffff" strokeWidth="10" />
                 </svg>
 
-                {/* Pins */}
                 {listed.map((d, i) => {
                   const positions = [
                     { left: "15%", top: "20%" },
@@ -333,8 +307,7 @@ export function NgoFeed() {
                   ];
                   const pos = positions[i % positions.length];
                   const hoursToExpiry =
-                    (new Date(d.expiryDeadline).getTime() - Date.now()) /
-                    3600000;
+                    (new Date(d.expiryDeadline).getTime() - Date.now()) / 3600000;
                   const isUrgent = hoursToExpiry < 2;
                   const isWarning = hoursToExpiry < 4 && !isUrgent;
 
@@ -354,64 +327,94 @@ export function NgoFeed() {
                       className="absolute -translate-x-1/2 -translate-y-1/2"
                     >
                       <div
-                        className={`relative flex items-center justify-center rounded-full p-2 ring-3 ring-white ${
+                        className={`relative flex items-center justify-center rounded-full p-2 ring-4 ring-white ${
                           isUrgent
-                            ? "zw-urgency-pulse bg-gradient-to-br from-red-500 to-red-600"
+                            ? "zw-urgency-pulse bg-[#ef4444]"
                             : isWarning
-                              ? "zw-urgency-pulse-amber bg-gradient-to-br from-amber-400 to-amber-600"
-                              : "bg-gradient-to-br from-zw-primary-600 to-zw-primary-800"
-                        } shadow-lg`}
+                              ? "zw-urgency-pulse-amber bg-[#f59e0b]"
+                              : "bg-[#16A34A]"
+                        }`}
+                        style={{ boxShadow: "0 4px 12px rgba(17, 24, 39, 0.15)" }}
                       >
                         <Utensils size={14} className="text-white" />
                       </div>
-                      <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded-md glass-strong px-1.5 py-0.5 text-[9px] font-bold text-zw-text-primary shadow-sm">
+                      <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-white px-1.5 py-0.5 text-[9px] font-bold text-[#111827]" style={{ boxShadow: "0 2px 8px rgba(17, 24, 39, 0.1)" }}>
                         {d.servings} servings
                       </div>
                     </motion.button>
                   );
                 })}
 
-                {/* Self marker */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <div className="zw-aura relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-zw-primary-800 to-zw-primary-900 ring-4 ring-white shadow-xl">
+                  <div className="zw-aura relative flex h-12 w-12 items-center justify-center rounded-full bg-[#111827] ring-4 ring-white" style={{ boxShadow: "0 4px 12px rgba(17, 24, 39, 0.2)" }}>
                     <HeartHandshake size={20} className="text-white" />
                   </div>
-                  <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-zw-primary-900 px-2 py-0.5 text-[9px] font-bold text-white">
+                  <div className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#111827] px-2 py-0.5 text-[9px] font-bold text-white">
                     You
                   </div>
                 </div>
               </div>
 
-              {/* Bottom info card */}
-              <div className="absolute inset-x-0 bottom-0 rounded-t-[2rem] glass-strong p-4 shadow-2xl">
-                <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-zw-text-muted/40" />
-                <h3 className="font-display text-sm font-bold text-zw-text-primary">
+              <div className="absolute inset-x-0 bottom-0 bg-white p-5" style={{ borderRadius: "32px 32px 0 0", boxShadow: "0 -8px 32px rgba(17, 24, 39, 0.1)" }}>
+                <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-[#e2e8f0]" />
+                <h3
+                  className="text-sm font-bold text-[#111827]"
+                  style={{ fontFamily: displayFont }}
+                >
                   {listed.length} donations around you
                 </h3>
-                <p className="text-[11px] text-zw-text-secondary">
+                <p className="text-[11px] text-[#64748b]">
                   Tap a pin to see details. Color indicates urgency.
                 </p>
                 <div className="mt-3 flex gap-3 text-[11px]">
                   <div className="flex items-center gap-1">
-                    <div className="h-2.5 w-2.5 rounded-full bg-zw-primary-700" />
-                    <span className="text-zw-text-secondary">Safe (4h+)</span>
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#16A34A]" />
+                    <span className="text-[#64748b]">Safe (4h+)</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="h-2.5 w-2.5 rounded-full bg-zw-warning" />
-                    <span className="text-zw-text-secondary">Soon (2-4h)</span>
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#f59e0b]" />
+                    <span className="text-[#64748b]">Soon (2-4h)</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="h-2.5 w-2.5 rounded-full bg-zw-danger" />
-                    <span className="text-zw-text-secondary">
-                      Urgent (&lt;2h)
-                    </span>
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#ef4444]" />
+                    <span className="text-[#64748b]">Urgent (&lt;2h)</span>
                   </div>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+      </main>
+    </div>
+  );
+}
+
+function NgoStat({
+  value,
+  label,
+  color,
+  bg,
+}: {
+  value: string;
+  label: string;
+  color: string;
+  bg: string;
+}) {
+  return (
+    <div
+      className="flex flex-col items-start p-3.5"
+      style={{
+        borderRadius: 22,
+        background: bg,
+      }}
+    >
+      <div
+        className="text-lg font-bold"
+        style={{ fontFamily: displayFont, color }}
+      >
+        {value}
       </div>
+      <div className="text-[10px] text-[#64748b]">{label}</div>
     </div>
   );
 }

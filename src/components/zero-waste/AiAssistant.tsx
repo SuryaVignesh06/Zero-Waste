@@ -3,7 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { Sparkles, X, Send, Mic } from "lucide-react";
+import { Sparkles, X, Send, Mic, Paperclip, Mic2 } from "lucide-react";
+
+const displayFont = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
 
 interface Message {
   id: number;
@@ -19,7 +21,7 @@ const SUGGESTIONS = [
 ];
 
 const AI_RESPONSES: Record<string, string> = {
-  milk: "I found 3 milk options near you. The cheapest is Amul Toned Milk 1L at \u20B930 (was \u20B980) from FreshMart Anna Nagar, 0.8km away. It expires in 2 days but our AI predicts it's safe for 3 more days.",
+  milk: "I found 3 milk options near you. The cheapest is Amul Toned Milk 1L at ₹30 (was ₹80) from FreshMart Anna Nagar, 0.8km away. It expires in 2 days but our AI predicts it's safe for 3 more days.",
   donate:
     "To donate food: tap the Donate button at the bottom center of the home screen, then take a photo of your food. Our AI will identify it and auto-fill the details. Add your pickup address and confirm — nearby NGOs will be notified instantly.",
   impact:
@@ -91,7 +93,7 @@ export function AiAssistant() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setOpen(false)}
-            className="absolute inset-0 z-50 bg-black/40 backdrop-blur-md"
+            className="absolute inset-0 z-50 bg-black/40"
           />
           <motion.div
             initial={{ y: "100%" }}
@@ -104,42 +106,49 @@ export function AiAssistant() {
             onDragEnd={(_, info) => {
               if (info.offset.y > 100) setOpen(false);
             }}
-            className="absolute inset-x-0 bottom-0 z-50 flex h-[80%] flex-col rounded-t-[2rem] glass-strong shadow-2xl"
+            className="absolute inset-x-0 bottom-0 z-50 flex h-[80%] flex-col bg-white"
+            style={{
+              borderRadius: "32px 32px 0 0",
+              boxShadow: "0 -8px 32px rgba(17, 24, 39, 0.12)",
+            }}
           >
             {/* Header */}
-            <div className="relative flex items-center gap-3 border-b border-zw-divider px-5 py-3">
-              <div className="mx-auto absolute left-1/2 top-1.5 h-1.5 w-10 -translate-x-1/2 rounded-full bg-zw-text-muted/40" />
-              <div className="zw-ai-border h-9 w-9 rounded-full p-[2px]">
+            <div className="relative flex items-center gap-3 border-b border-[#f1f5f9] px-5 py-3">
+              <div className="mx-auto absolute left-1/2 top-1.5 h-1.5 w-10 -translate-x-1/2 rounded-full bg-[#e2e8f0]" />
+              <div className="zw-ai-border h-10 w-10 rounded-full p-[2px]">
                 <div className="flex h-full w-full items-center justify-center rounded-full bg-white">
-                  <Sparkles size={16} className="text-zw-primary-700" />
+                  <Sparkles size={16} className="text-[#16A34A]" />
                 </div>
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-display text-sm font-bold tracking-tight text-zw-text-primary">
+                  <h3
+                    className="text-sm font-bold tracking-tight text-[#111827]"
+                    style={{ fontFamily: displayFont }}
+                  >
                     Zira AI
                   </h3>
-                  <span className="rounded-full bg-zw-primary-100 px-1.5 py-0.5 text-[8px] font-bold uppercase text-zw-primary-800">
+                  <span className="rounded-full bg-[#f0fdf4] px-1.5 py-0.5 text-[8px] font-bold uppercase text-[#16A34A]">
                     Beta
                   </span>
                 </div>
-                <div className="flex items-center gap-1 text-[10px] text-zw-text-muted">
-                  <div className="h-1.5 w-1.5 rounded-full bg-zw-success" />
+                <div className="flex items-center gap-1 text-[10px] text-[#94a3b8]">
+                  <div className="h-1.5 w-1.5 rounded-full bg-[#22c55e]" />
                   Online · here to help
                 </div>
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full glass active:scale-95"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f1f5f9] active:scale-95"
               >
-                <X size={14} className="text-zw-text-secondary" />
+                <X size={14} className="text-[#64748b]" />
               </button>
             </div>
 
-            {/* Messages */}
+            {/* Messages — WhatsApp style */}
             <div
               ref={scrollRef}
-              className="flex-1 space-y-3 overflow-y-auto zw-scroll px-5 py-4"
+              className="flex-1 space-y-3 overflow-y-auto zw-scroll bg-[#FCFCF9] px-5 py-4"
             >
               {messages.map((m) => (
                 <motion.div
@@ -148,19 +157,26 @@ export function AiAssistant() {
                   animate={{ y: 0, opacity: 1 }}
                   className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  {m.role === "ai" && (
-                    <div className="zw-ai-border mr-2 mt-1 h-7 w-7 flex-shrink-0 rounded-full p-[1.5px]">
-                      <div className="flex h-full w-full items-center justify-center rounded-full bg-white">
-                        <Sparkles size={12} className="text-zw-primary-700" />
-                      </div>
-                    </div>
-                  )}
                   <div
-                    className={`max-w-[78%] rounded-3xl px-4 py-2.5 text-[12px] leading-relaxed ${
+                    className={`max-w-[78%] px-4 py-2.5 text-[12px] leading-relaxed ${
                       m.role === "user"
-                        ? "glass-primary text-white rounded-br-md"
-                        : "glass text-zw-text-primary rounded-bl-md"
+                        ? "text-white"
+                        : "bg-white text-[#111827]"
                     }`}
+                    style={{
+                      borderRadius:
+                        m.role === "user"
+                          ? "22px 22px 6px 22px"
+                          : "22px 22px 22px 6px",
+                      background:
+                        m.role === "user"
+                          ? "linear-gradient(135deg, #16a34a, #15803d)"
+                          : "#ffffff",
+                      boxShadow:
+                        m.role === "ai"
+                          ? "0 2px 8px rgba(17, 24, 39, 0.05)"
+                          : "0 4px 12px rgba(22, 163, 74, 0.2)",
+                    }}
                   >
                     {m.text}
                   </div>
@@ -173,12 +189,13 @@ export function AiAssistant() {
                   animate={{ y: 0, opacity: 1 }}
                   className="flex justify-start"
                 >
-                  <div className="zw-ai-border mr-2 mt-1 h-7 w-7 flex-shrink-0 rounded-full p-[1.5px]">
-                    <div className="flex h-full w-full items-center justify-center rounded-full bg-white">
-                      <Sparkles size={12} className="text-zw-primary-700" />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 rounded-3xl glass px-4 py-3">
+                  <div
+                    className="flex items-center gap-1 bg-white px-5 py-3.5"
+                    style={{
+                      borderRadius: "22px 22px 22px 6px",
+                      boxShadow: "0 2px 8px rgba(17, 24, 39, 0.05)",
+                    }}
+                  >
                     {[0, 1, 2].map((i) => (
                       <motion.div
                         key={i}
@@ -191,7 +208,7 @@ export function AiAssistant() {
                           repeat: Infinity,
                           delay: i * 0.2,
                         }}
-                        className="h-2 w-2 rounded-full bg-zw-primary-600"
+                        className="h-2 w-2 rounded-full bg-[#16A34A]"
                       />
                     ))}
                   </div>
@@ -201,7 +218,7 @@ export function AiAssistant() {
               {/* Suggestions */}
               {messages.length === 1 && (
                 <div className="mt-4 space-y-2">
-                  <p className="text-[11px] font-medium text-zw-text-muted">
+                  <p className="text-[11px] font-medium text-[#94a3b8]">
                     Try asking:
                   </p>
                   {SUGGESTIONS.map((s, i) => (
@@ -211,9 +228,10 @@ export function AiAssistant() {
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.2 + i * 0.08 }}
                       onClick={() => send(s)}
-                      className="flex w-full items-center gap-2 rounded-2xl glass px-3 py-2.5 text-left text-[12px] font-medium text-zw-text-primary transition-all hover:bg-white/80 active:scale-98"
+                      className="flex w-full items-center gap-2 bg-white px-4 py-3 text-left text-[12px] font-medium text-[#111827] active:scale-98"
+                      style={{ borderRadius: 22, boxShadow: "0 2px 8px rgba(17, 24, 39, 0.05)" }}
                     >
-                      <Sparkles size={12} className="text-zw-primary-700" />
+                      <Sparkles size={12} className="text-[#16A34A]" />
                       {s}
                     </motion.button>
                   ))}
@@ -221,25 +239,34 @@ export function AiAssistant() {
               )}
             </div>
 
-            {/* Input */}
-            <div className="border-t border-zw-divider p-3">
-              <div className="flex items-center gap-2 rounded-2xl glass px-3 py-1.5">
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") send(input);
-                  }}
-                  placeholder="Ask Zira anything..."
-                  className="h-9 flex-1 bg-transparent text-[13px] placeholder:text-zw-text-muted focus:outline-none"
-                />
-                <button className="flex h-8 w-8 items-center justify-center rounded-xl glass text-zw-text-muted active:scale-90">
-                  <Mic size={16} />
+            {/* Input bar — WhatsApp style */}
+            <div className="border-t border-[#f1f5f9] bg-white p-3">
+              <div className="flex items-center gap-2">
+                <button className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#f1f5f9] text-[#64748b] active:scale-90">
+                  <Paperclip size={16} />
                 </button>
+                <div className="flex flex-1 items-center gap-2 bg-[#f8fafc] px-4 py-2" style={{ borderRadius: 22 }}>
+                  <input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") send(input);
+                    }}
+                    placeholder="Type a message..."
+                    className="flex-1 bg-transparent text-[13px] text-[#111827] placeholder:text-[#94a3b8] focus:outline-none"
+                  />
+                  <button className="text-[#64748b] active:scale-90">
+                    <Mic2 size={18} />
+                  </button>
+                </div>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => send(input)}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl glass-primary text-white"
+                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white"
+                  style={{
+                    background: "linear-gradient(135deg, #16a34a, #15803d)",
+                    boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+                  }}
                 >
                   <Send size={14} />
                 </motion.button>

@@ -4,64 +4,74 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* iOS San Francisco-inspired font stack */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+  /* Typography — SF Pro Display (headings) + Poppins (body) */
+  --font-sans: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
     "Helvetica Neue", "Inter", system-ui, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
-    "SF Pro Text", "Helvetica Neue", "Inter", system-ui, sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
 
-  /* === Zero-Waste Liquid Glass Palette === */
-  /* Primary — Fresh Emerald (trust + sustainability) */
-  --color-zw-primary-900: #022c22;
-  --color-zw-primary-800: #064e3b;
-  --color-zw-primary-700: #047857;
-  --color-zw-primary-600: #059669;
-  --color-zw-primary-500: #10b981;
-  --color-zw-primary-400: #34d399;
-  --color-zw-primary-300: #6ee7b7;
-  --color-zw-primary-200: #a7f3d0;
-  --color-zw-primary-100: #d1fae5;
-  --color-zw-primary-50: #ecfdf5;
+  /* === Zero-Waste Soft Premium Palette === */
+  /* Primary — Emerald Green */
+  --color-zw-primary-900: #14532d;
+  --color-zw-primary-800: #166534;
+  --color-zw-primary-700: #15803d;
+  --color-zw-primary-600: #16a34a;
+  --color-zw-primary-500: #22c55e;
+  --color-zw-primary-400: #4ade80;
+  --color-zw-primary-300: #86efac;
+  --color-zw-primary-200: #bbf7d0;
+  --color-zw-primary-100: #dcfce7;
+  --color-zw-primary-50: #f0fdf4;
 
-  /* Accent — Warm Amber (urgency + food) */
-  --color-zw-accent-700: #c2410c;
-  --color-zw-accent-600: #ea580c;
-  --color-zw-accent-500: #f97316;
-  --color-zw-accent-400: #fb923c;
-  --color-zw-accent-300: #fdba74;
-  --color-zw-accent-200: #fed7aa;
-  --color-zw-accent-100: #ffedd5;
-  --color-zw-accent-50: #fff7ed;
+  /* Secondary — Mint Green */
+  --color-zw-mint-500: #86efac;
+  --color-zw-mint-400: #a7f3d0;
+  --color-zw-mint-300: #c4f5d9;
+  --color-zw-mint-200: #d1fae5;
+  --color-zw-mint-100: #ecfdf5;
 
-  /* Soft accent — Pink (for visual richness) */
-  --color-zw-pink-500: #ec4899;
-  --color-zw-pink-400: #f472b6;
-  --color-zw-pink-300: #f9a8d4;
-  --color-zw-pink-200: #fbcfe8;
-  --color-zw-pink-100: #fce7f3;
+  /* Accent — Soft Blue */
+  --color-zw-blue-600: #3b82f6;
+  --color-zw-blue-500: #60a5fa;
+  --color-zw-blue-400: #93c5fd;
+  --color-zw-blue-300: #bfdbfe;
+  --color-zw-blue-200: #dbeafe;
+  --color-zw-blue-100: #eff6ff;
 
-  /* Backgrounds — soft gradient base */
-  --color-zw-bg-base: #f5f3f6;
-  --color-zw-bg-surface: rgba(255, 255, 255, 0.72);
-  --color-zw-bg-elevated: rgba(255, 255, 255, 0.85);
-  --color-zw-bg-muted: #efeef2;
+  /* Accent — Soft Pink */
+  --color-zw-pink-400: #f9a8d4;
+  --color-zw-pink-300: #fbcfe8;
+  --color-zw-pink-200: #fce7f3;
+  --color-zw-pink-100: #fdf2f8;
 
-  --color-zw-text-primary: #1a1a2e;
-  --color-zw-text-secondary: #6e7191;
-  --color-zw-text-muted: #9a9ab0;
-  --color-zw-text-inverse: #ffffff;
+  /* Accent — Soft Amber */
+  --color-zw-amber-500: #fbbf24;
+  --color-zw-amber-400: #fcd34d;
+  --color-zw-amber-300: #fde68a;
+  --color-zw-amber-200: #fef3c7;
+  --color-zw-amber-100: #fffbeb;
 
-  --color-zw-border: rgba(255, 255, 255, 0.6);
-  --color-zw-border-strong: rgba(0, 0, 0, 0.06);
-  --color-zw-divider: rgba(0, 0, 0, 0.05);
+  /* Soft Warm Neutrals */
+  --color-zw-bg-base: #fcfcf9;
+  --color-zw-bg-cream: #faf7f0;
+  --color-zw-bg-warm: #f5f3ee;
+  --color-zw-bg-mint: #f0fdf4;
+  --color-zw-bg-blue: #eff6ff;
+  --color-zw-bg-pink: #fdf2f8;
+
+  --color-zw-surface: #ffffff;
+
+  --color-zw-text-primary: #111827;
+  --color-zw-text-secondary: #64748b;
+  --color-zw-text-muted: #94a3b8;
+
+  --color-zw-divider: #e5e7eb;
 
   --color-zw-success: #22c55e;
   --color-zw-warning: #f59e0b;
-  --color-zw-danger: #ef4444;
-  --color-zw-info: #0ea5e9;
+  --color-zw-error: #ef4444;
 
-  /* shadcn compatibility */
+  /* shadcn compat */
   --color-background: var(--color-zw-bg-base);
   --color-foreground: var(--color-zw-text-primary);
   --color-card: #ffffff;
@@ -72,25 +82,27 @@
   --color-primary-foreground: #ffffff;
   --color-secondary: var(--color-zw-primary-100);
   --color-secondary-foreground: var(--color-zw-primary-900);
-  --color-muted: var(--color-zw-bg-muted);
+  --color-muted: var(--color-zw-bg-warm);
   --color-muted-foreground: var(--color-zw-text-secondary);
-  --color-accent: var(--color-zw-accent-100);
-  --color-accent-foreground: var(--color-zw-accent-700);
-  --color-destructive: var(--color-zw-danger);
-  --color-border: var(--color-zw-border-strong);
-  --color-input: var(--color-zw-border-strong);
+  --color-accent: var(--color-zw-blue-100);
+  --color-accent-foreground: var(--color-zw-blue-600);
+  --color-destructive: var(--color-zw-error);
+  --color-border: var(--color-zw-divider);
+  --color-input: var(--color-zw-divider);
   --color-ring: var(--color-zw-primary-500);
 
-  --radius-sm: 10px;
-  --radius-md: 16px;
+  /* Radius scale */
+  --radius-sm: 12px;
+  --radius-md: 18px;
   --radius-lg: 22px;
   --radius-xl: 28px;
-  --radius-2xl: 34px;
+  --radius-2xl: 32px;
+  --radius-3xl: 36px;
 }
 
 @layer base {
   * {
-    border-color: var(--color-zw-border-strong);
+    border-color: var(--color-zw-divider);
     -webkit-tap-highlight-color: transparent;
   }
   html,
@@ -101,8 +113,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    font-feature-settings: "ss01", "cv01", "cv11";
-    letter-spacing: -0.01em;
     overscroll-behavior: none;
   }
   h1,
@@ -112,8 +122,9 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.02em;
     font-weight: 700;
+    color: var(--color-zw-text-primary);
   }
   button {
     -webkit-tap-highlight-color: transparent;
@@ -127,134 +138,67 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  /* Soft custom scrollbar for vertical scroll */
+  /* Custom soft scrollbar for vertical scroll */
   .zw-scroll::-webkit-scrollbar {
-    width: 6px;
+    width: 0;
+    height: 0;
   }
-  .zw-scroll::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .zw-scroll::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.08);
-    border-radius: 999px;
+  .zw-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 }
 
 /* ============================================
-   LIQUID GLASS COMPONENT SYSTEM
+   SOFT PREMIUM CARD SYSTEM
+   No glassmorphism — solid white surfaces only
    ============================================ */
 
-/* Glass card — the core element */
-.glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.05);
+/* Standard soft card — solid white, soft shadow, 32px radius */
+.card-soft {
+  background: #ffffff;
+  border-radius: 32px;
+  box-shadow: 0 4px 20px rgba(17, 24, 39, 0.06);
 }
 
-.glass-strong {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 12px 32px rgba(0, 0, 0, 0.08);
+.card-soft-sm {
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 2px 12px rgba(17, 24, 39, 0.05);
 }
 
-.glass-dark {
-  background: rgba(15, 23, 42, 0.78);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    0 12px 32px rgba(0, 0, 0, 0.18);
+.card-tinted {
+  border-radius: 32px;
+  box-shadow: 0 4px 20px rgba(17, 24, 39, 0.06);
 }
 
-.glass-primary {
-  background: linear-gradient(
-    135deg,
-    rgba(16, 185, 129, 0.95),
-    rgba(5, 150, 105, 0.92)
-  );
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow:
-    0 1px 2px rgba(4, 120, 87, 0.2),
-    0 12px 32px rgba(16, 185, 129, 0.25);
+/* Floating bottom sheet */
+.sheet-soft {
+  background: #ffffff;
+  border-radius: 32px 32px 0 0;
+  box-shadow: 0 -8px 32px rgba(17, 24, 39, 0.1);
 }
 
-/* Inset highlight (iOS-style top highlight) */
-.glass-inset {
-  position: relative;
-}
-.glass-inset::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(255, 255, 255, 0) 30%
-  );
-  pointer-events: none;
-  z-index: 1;
+/* Primary button — emerald gradient */
+.btn-primary {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.25);
 }
 
-/* Soft pastel gradient backgrounds */
-.bg-zw-aurora {
-  background:
-    radial-gradient(
-      ellipse 80% 50% at 20% 0%,
-      rgba(16, 185, 129, 0.18),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 60% 50% at 80% 10%,
-      rgba(236, 72, 153, 0.12),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 70% 50% at 50% 100%,
-      rgba(249, 115, 22, 0.14),
-      transparent 60%
-    ),
-    #f5f3f6;
+.btn-primary-soft {
+  background: var(--color-zw-primary-50);
+  color: var(--color-zw-primary-700);
+  border-radius: 22px;
 }
 
-.bg-zw-aurora-mint {
-  background:
-    radial-gradient(
-      ellipse 80% 60% at 20% 0%,
-      rgba(16, 185, 129, 0.22),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 60% 50% at 80% 100%,
-      rgba(52, 211, 153, 0.18),
-      transparent 60%
-    ),
-    #f5f3f6;
+/* Search bar — pill shape */
+.search-pill {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 4px 20px rgba(17, 24, 39, 0.06);
 }
-
-/* Decorative blurred blobs */
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ============================================
-   ANIMATIONS
-   ============================================ */
 
 /* AI element shimmering border */
 @keyframes zw-ai-shimmer {
@@ -270,11 +214,10 @@
   background: linear-gradient(
     90deg,
     var(--color-zw-primary-500),
-    var(--color-zw-accent-500),
-    var(--color-zw-pink-400),
+    var(--color-zw-blue-500),
     var(--color-zw-primary-500)
   );
-  background-size: 300% 100%;
+  background-size: 200% 100%;
   animation: zw-ai-shimmer 4s ease-in-out infinite;
 }
 
@@ -283,7 +226,7 @@
   0%,
   100% {
     transform: scale(1);
-    opacity: 0.5;
+    opacity: 0.45;
   }
   50% {
     transform: scale(1.4);
@@ -309,7 +252,7 @@
 .zw-skeleton {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.6);
+  background: #f1f5f9;
 }
 .zw-skeleton::after {
   content: "";
@@ -325,24 +268,6 @@
   animation: zw-shimmer 1.4s infinite;
 }
 
-/* Pin drop animation */
-@keyframes zw-pin-drop {
-  0% {
-    transform: translateY(-30px) scale(0.5);
-    opacity: 0;
-  }
-  60% {
-    transform: translateY(4px) scale(1.1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
-.zw-pin-drop {
-  animation: zw-pin-drop 0.5s cubic-bezier(0.28, 0.84, 0.42, 1) both;
-}
-
 /* Pulsing urgency pin */
 @keyframes zw-urgency-pulse {
   0%,
@@ -350,11 +275,11 @@
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
   }
   50% {
-    box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
   }
 }
 .zw-urgency-pulse {
-  animation: zw-urgency-pulse 1.5s ease-out infinite;
+  animation: zw-urgency-pulse 1.6s ease-out infinite;
 }
 @keyframes zw-urgency-pulse-amber {
   0%,
@@ -362,31 +287,11 @@
     box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
   }
   50% {
-    box-shadow: 0 0 0 14px rgba(245, 158, 11, 0);
+    box-shadow: 0 0 0 12px rgba(245, 158, 11, 0);
   }
 }
 .zw-urgency-pulse-amber {
-  animation: zw-urgency-pulse-amber 1.5s ease-out infinite;
-}
-
-/* Slow float for decorative blobs */
-@keyframes zw-float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(20px, -30px) scale(1.05);
-  }
-  66% {
-    transform: translate(-15px, 20px) scale(0.95);
-  }
-}
-.zw-float {
-  animation: zw-float 12s ease-in-out infinite;
-}
-.zw-float-slow {
-  animation: zw-float 18s ease-in-out infinite;
+  animation: zw-urgency-pulse-amber 1.6s ease-out infinite;
 }
 
 /* Hide number input arrows */
@@ -402,23 +307,42 @@ input[type="number"] {
 /* iOS-style switch */
 .ios-switch {
   position: relative;
-  width: 51px;
-  height: 31px;
+  width: 48px;
+  height: 28px;
   border-radius: 999px;
   transition: background-color 0.3s ease;
+  background: #e2e8f0;
+}
+.ios-switch.on {
+  background: var(--color-zw-primary-600);
 }
 .ios-switch::after {
   content: "";
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 27px;
-  height: 27px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
   background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .ios-switch.on::after {
   transform: translateX(20px);
+}
+
+/* Stagger animation utility */
+@keyframes zw-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.zw-fade-up {
+  animation: zw-fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

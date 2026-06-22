@@ -19,6 +19,8 @@ const ICONS: Record<string, any> = {
   Sparkles,
 };
 
+const displayFont = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+
 export function Onboarding() {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
   const [index, setIndex] = useState(0);
@@ -43,16 +45,32 @@ export function Onboarding() {
   };
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-zw-aurora">
-      {/* Decorative blobs */}
-      <div className="blob bg-zw-primary-400/50 zw-float-slow" style={{ width: 300, height: 300, top: "-10%", right: "-20%" }} />
-      <div className="blob bg-zw-pink-300/40 zw-float" style={{ width: 250, height: 250, top: "40%", left: "-15%" }} />
-      <div className="blob bg-zw-accent-300/30 zw-float-slow" style={{ width: 200, height: 200, bottom: "20%", right: "-10%" }} />
+    <div className="relative flex h-full flex-col overflow-hidden bg-[#FCFCF9]">
+      {/* Decorative soft pastel blob */}
+      <motion.div
+        animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.4, 0.3] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, #86efac 0%, transparent 70%)",
+        }}
+      />
+      <motion.div
+        animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.35, 0.25] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="pointer-events-none absolute -bottom-32 -left-32 h-96 w-96 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, #bfdbfe 0%, transparent 70%)",
+        }}
+      />
 
       {/* Skip */}
       <button
         onClick={completeOnboarding}
-        className="absolute right-5 top-5 z-20 rounded-full glass px-4 py-1.5 text-[13px] font-semibold text-zw-text-primary transition-all hover:bg-white/90 active:scale-95"
+        className="absolute right-5 top-5 z-20 rounded-full bg-white px-4 py-1.5 text-[13px] font-semibold text-[#111827] active:scale-95"
+        style={{ boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}
       >
         Skip
       </button>
@@ -77,10 +95,19 @@ export function Onboarding() {
                 transition={{ delay: 0.1, duration: 0.5 }}
                 className="flex items-center gap-2"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl glass-primary">
+                <div
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl"
+                  style={{
+                    background: "linear-gradient(135deg, #16a34a, #15803d)",
+                    boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+                  }}
+                >
                   <Recycle size={20} className="text-white" strokeWidth={2.4} />
                 </div>
-                <span className="font-display text-xl font-bold tracking-tight text-zw-text-primary">
+                <span
+                  className="text-xl font-bold tracking-tight text-[#111827]"
+                  style={{ fontFamily: displayFont }}
+                >
                   Zero-Waste
                 </span>
               </motion.div>
@@ -99,17 +126,24 @@ export function Onboarding() {
                 }}
                 className="relative"
               >
-                {/* Glowing aura */}
                 <motion.div
                   animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className={`absolute inset-0 rounded-[3rem] bg-gradient-to-br ${slide.gradient} blur-2xl`}
+                  className="absolute inset-0 rounded-[3rem] blur-2xl"
+                  style={{ background: slide.gradient }}
                 />
                 <div
-                  className={`relative flex h-32 w-32 items-center justify-center rounded-[3rem] bg-gradient-to-br ${slide.gradient} shadow-2xl`}
+                  className="relative flex h-32 w-32 items-center justify-center rounded-[3rem]"
+                  style={{
+                    background: slide.gradient,
+                    boxShadow: "0 16px 40px rgba(17, 24, 39, 0.18)",
+                  }}
                 >
-                  <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-b from-white/30 to-transparent" />
-                  <Icon size={56} strokeWidth={1.8} className="relative text-white" />
+                  <Icon
+                    size={56}
+                    strokeWidth={1.8}
+                    className="text-white"
+                  />
                 </div>
               </motion.div>
             </div>
@@ -120,7 +154,8 @@ export function Onboarding() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.4 }}
-                className="font-display text-[28px] font-bold leading-tight tracking-tight text-zw-text-primary"
+                className="text-[28px] font-bold leading-tight tracking-tight text-[#111827]"
+                style={{ fontFamily: displayFont }}
               >
                 {slide.title}
               </motion.h1>
@@ -128,7 +163,7 @@ export function Onboarding() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4, duration: 0.4 }}
-                className="mt-3 text-[15px] leading-relaxed text-zw-text-secondary"
+                className="mt-3 text-[15px] leading-relaxed text-[#64748b]"
               >
                 {slide.subtitle}
               </motion.p>
@@ -139,7 +174,6 @@ export function Onboarding() {
 
       {/* Pagination + CTA */}
       <div className="relative z-10 px-6 pb-10 pt-4">
-        {/* Pagination */}
         <div className="mb-5 flex items-center justify-center gap-2">
           {ONBOARDING_SLIDES.map((_, i) => (
             <motion.button
@@ -152,9 +186,7 @@ export function Onboarding() {
               animate={{
                 width: i === index ? 28 : 8,
                 backgroundColor:
-                  i === index
-                    ? "var(--color-zw-primary-700)"
-                    : "rgba(0, 0, 0, 0.15)",
+                  i === index ? "#16A34A" : "rgba(17, 24, 39, 0.12)",
               }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               style={{ height: 8 }}
@@ -162,12 +194,12 @@ export function Onboarding() {
           ))}
         </div>
 
-        {/* CTA */}
         <div className="flex items-center gap-3">
           {index > 0 && (
             <button
               onClick={goBack}
-              className="flex h-14 w-14 items-center justify-center rounded-2xl glass text-zw-text-primary transition-all hover:bg-white/90 active:scale-95"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#111827] active:scale-95"
+              style={{ boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}
             >
               <ChevronLeft size={22} />
             </button>
@@ -175,7 +207,12 @@ export function Onboarding() {
           <motion.button
             onClick={goNext}
             whileTap={{ scale: 0.96 }}
-            className="flex h-14 flex-1 items-center justify-center gap-2 rounded-2xl glass-primary text-[15px] font-semibold text-white active:scale-98"
+            className="flex h-14 flex-1 items-center justify-center gap-2 text-[15px] font-semibold text-white"
+            style={{
+              borderRadius: 22,
+              background: "linear-gradient(135deg, #16a34a, #15803d)",
+              boxShadow: "0 8px 24px rgba(22, 163, 74, 0.3)",
+            }}
           >
             {index === ONBOARDING_SLIDES.length - 1
               ? "Get Started"
