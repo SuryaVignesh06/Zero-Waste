@@ -3,191 +3,228 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { ProductCard } from "./ProductCard";
 import { formatINR } from "./Countdown";
-import { Search, SlidersHorizontal, Mic, ShoppingBag } from "lucide-react";
+import { staggerContainer, cardVariants } from "@/lib/animations";
+import { Search, SlidersHorizontal, ShoppingCart, Clock } from "lucide-react";
 
-const FILTERS = [
-  { id: "all", label: "All" },
-  { id: "expiring-today", label: "Expiring today" },
-  { id: "under-50", label: "Under \u20B950" },
-  { id: "over-50-off", label: "Over 50% off" },
-  { id: "within-1km", label: "Within 1km" },
-  { id: "ai-match", label: "AI matched" },
-];
+const CATEGORIES = ["All", "Dairy", "Bakery", "Vegetables", "Snacks", "Beverages", "Packaged"];
 
 export function Marketplace() {
   const products = useAppStore((s) => s.products);
   const setCartOpen = useAppStore((s) => s.setCartOpen);
   const cartCount = useAppStore((s) => s.cartCount);
-  const cartTotal = useAppStore((s) => s.cartTotal);
-  const [activeFilter, setActiveFilter] = useState("all");
+  const setActiveProduct = useAppStore((s) => s.setActiveProduct);
+  const addToCart = useAppStore((s) => s.addToCart);
+  const [activeCategory, setActiveCategory] = useState("All");
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<"relevance" | "price-low" | "distance" | "expiry">("relevance");
+  const [addedItems, setAddedItems] = useState<Record<string, number>>({});
 
   const filtered = useMemo(() => {
     let list = [...products];
     if (query.trim()) {
       const q = query.toLowerCase();
-      list = list.filter((p) => p.name.toLowerCase().includes(q) || p.shopName.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+      list = list.filter((p) => p.name.toLowerCase().includes(q) || p.shopName.toLowerCase().includes(q));
     }
-    switch (activeFilter) {
-      case "expiring-today":
-        list = list.filter((p) => (new Date(p.bestBefore).getTime() - Date.now()) / 86400000 <= 1.5);
-        break;
-      case "under-50":
-        list = list.filter((p) => p.discountedPrice < 50);
-        break;
-      case "over-50-off":
-        list = list.filter((p) => (p.originalPrice - p.discountedPrice) / p.originalPrice > 0.5);
-        break;
-      case "within-1km":
-        list = list.filter((p) => p.shopDistanceKm <= 1);
-        break;
-      case "ai-match":
-        list = list.filter((p) => p.isAiMatch);
-        break;
-    }
-    switch (sort) {
-      case "price-low":
-        list.sort((a, b) => a.discountedPrice - b.discountedPrice);
-        break;
-      case "distance":
-        list.sort((a, b) => a.shopDistanceKm - b.shopDistanceKm);
-        break;
-      case "expiry":
-        list.sort((a, b) => new Date(a.bestBefore).getTime() - new Date(b.bestBefore).getTime());
-        break;
+    if (activeCategory !== "All") {
+      list = list.filter((p) => p.category.toLowerCase() === activeCategory.toLowerCase());
     }
     return list;
-  }, [products, activeFilter, query, sort]);
+  }, [products, activeCategory, query]);
 
-  const hasItems = cartCount() > 0;
+  const handleAdd = (e: React.MouseEvent, productId: string) => {
+    e.stopPropagation();
+    const product = products.find((p) => p.id === productId);
+    if (product) {
+      addToCart(product);
+      setAddedItems((prev) => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+    }
+  };
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }} className="bg-[#f5f1ed]">
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }} className="bg-[#F7F5F0]">
       {/* Header */}
-      <div className="px-5 pb-3 pt-5">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="px-5 pt-4" style={{ flexShrink: 0 }}>
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[24px] font-bold tracking-tight text-[#1a1a1a]">Marketplace</h1>
-            <p className="text-[11px] text-[#4a4a4a]">{filtered.length} fresh deals near you</p>
+            <h1 className="text-[28px] font-extrabold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              Marketplace
+            </h1>
+            <p className="mt-1 text-[13px] text-[#8A8A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              Near-expiry deals — up to 70% off
+            </p>
           </div>
-          <div className="relative">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as any)}
-              className="appearance-none rounded-full bg-white py-2 pl-3 pr-8 text-[12px] font-semibold text-[#1a1a1a]"
-              style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)" }}
-            >
-              <option value="relevance">Relevance</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="distance">Distance</option>
-              <option value="expiry">Expiring soonest</option>
-            </select>
-            <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" width="10" height="6" viewBox="0 0 10 6" fill="none">
-              <path d="M1 1L5 5L9 1" stroke="#4a4a4a" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Search bar */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1" style={{ borderRadius: "28px", boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)" }}>
-            <div className="flex h-14 items-center rounded-[28px] bg-white pl-4 pr-2">
-              <Search size={18} className="text-[#8e8e93]" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search products, shops..."
-                className="h-full flex-1 bg-transparent px-3 text-[13px] text-[#1a1a1a] placeholder:text-[#8e8e93] focus:outline-none"
-              />
-              <button className="flex h-10 w-10 items-center justify-center rounded-full text-white" style={{ background: "linear-gradient(135deg, #047857, #064e3b)" }}>
-                <Mic size={14} />
-              </button>
-            </div>
-          </div>
-          <button className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-white text-[#4a4a4a] active:scale-95" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)" }}>
-            <SlidersHorizontal size={18} />
+          <button
+            onClick={() => setCartOpen(true)}
+            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[#0A0A0A]"
+          >
+            <ShoppingCart size={20} className="text-white" />
+            {cartCount() > 0 && (
+              <span
+                className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#DC2626] px-1 text-[10px] font-bold text-white"
+                style={{ fontFamily: "var(--font-outfit)" }}
+              >
+                {cartCount()}
+              </span>
+            )}
           </button>
         </div>
 
-        {/* Filter chips */}
-        <div className="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 pb-1">
-          {FILTERS.map((f) => {
-            const active = activeFilter === f.id;
+        {/* Search + filter */}
+        <div className="mt-4 flex gap-2.5">
+          <div className="flex h-[46px] flex-1 items-center rounded-[14px] bg-white px-3.5" style={{ boxShadow: "0px 2px 16px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)" }}>
+            <Search size={16} className="text-[#8A8A8A]" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products..."
+              className="ml-3 flex-1 bg-transparent text-[14px] text-[#0A0A0A] placeholder:text-[#8A8A8A] focus:outline-none"
+              style={{ fontFamily: "var(--font-jakarta)" }}
+            />
+          </div>
+          <button className="flex h-[46px] w-[46px] items-center justify-center rounded-[14px] bg-white" style={{ boxShadow: "0px 2px 16px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)" }}>
+            <SlidersHorizontal size={20} className="text-[#0A0A0A]" />
+          </button>
+        </div>
+
+        {/* Flash deal banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative mt-4 flex h-20 items-center justify-between overflow-hidden rounded-[20px] px-5"
+          style={{ background: "linear-gradient(135deg, #DC2626 0%, #D97706 100%)", boxShadow: "0px 4px 20px rgba(220,38,38,0.30)" }}
+        >
+          <div className="relative z-10">
+            <h3 className="text-[18px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
+              Flash Deals
+            </h3>
+            <p className="mt-1 text-[12px] text-white/85" style={{ fontFamily: "var(--font-jakarta)" }}>
+              Ending soon — save up to 70%
+            </p>
+          </div>
+          <div className="relative z-10 text-right">
+            <div className="text-[22px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
+              02:14:33
+            </div>
+            <p className="text-[10px] text-white/75" style={{ fontFamily: "var(--font-jakarta)" }}>
+              Hurry up!
+            </p>
+          </div>
+          {/* Decorative circles */}
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/8" />
+          <div className="absolute -bottom-12 right-12 h-20 w-20 rounded-full bg-white/8" />
+        </motion.div>
+
+        {/* Category tabs */}
+        <div className="-mx-5 mt-5 flex gap-2 overflow-x-auto px-5 pb-1">
+          {CATEGORIES.map((cat) => {
+            const active = activeCategory === cat;
             return (
               <button
-                key={f.id}
-                onClick={() => setActiveFilter(f.id)}
-                className="flex-shrink-0 rounded-full px-4 py-2 text-[12px] font-semibold transition-all active:scale-95"
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className="flex h-9 flex-shrink-0 items-center rounded-full px-4 text-[13px] font-semibold transition-all"
                 style={{
-                  background: active ? "linear-gradient(135deg, #047857, #064e3b)" : "#ffffff",
-                  color: active ? "#ffffff" : "#4a4a4a",
-                  boxShadow: active ? "0 4px 12px rgba(4, 120, 87, 0.2)" : "0 1px 3px rgba(0,0,0,0.04)",
+                  background: active ? "#0A0A0A" : "#FFFFFF",
+                  color: active ? "#FFFFFF" : "#4A4A4A",
+                  border: active ? "none" : "1px solid #E8E8E4",
+                  fontFamily: active ? "var(--font-outfit)" : "var(--font-jakarta)",
                 }}
               >
-                {f.label}
+                {cat}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Results */}
-      <main style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingBottom: hasItems ? "180px" : "120px" }}>
-        <div className="px-5 pt-3">
-          {filtered.length === 0 ? (
-            <div className="mt-20 flex flex-col items-center text-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)" }}>
-                <Search size={28} className="text-[#8e8e93]" />
-              </div>
-              <p className="mt-4 text-base font-bold text-[#1a1a1a]">No products found</p>
-              <p className="text-[12px] text-[#4a4a4a]">Try a different filter or search term</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {filtered.map((p, i) => (
-                <ProductCard key={p.id} product={p} index={i} />
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Bottom cart preview */}
-      {hasItems && (
+      {/* Product grid */}
+      <main style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingBottom: "120px" }}>
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
-          className="absolute inset-x-4 z-30"
-          style={{ bottom: "100px" }}
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="grid grid-cols-2 gap-3 px-5 pt-4"
         >
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => setCartOpen(true)}
-            className="flex w-full items-center justify-between text-white"
-            style={{ borderRadius: "20px", background: "linear-gradient(135deg, #047857, #064e3b)", boxShadow: "0 8px 24px rgba(4, 120, 87, 0.35)" }}
-          >
-            <div className="flex items-center gap-3 px-5 py-3.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
-                <ShoppingBag size={16} className="text-white" />
-              </div>
-              <div className="text-left">
-                <div className="text-[14px] font-bold">{cartCount()} items</div>
-                <div className="text-[10px] text-white/80">{formatINR(cartTotal())}</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 px-5 py-3.5 text-[13px] font-bold">
-              View Cart
-              <ChevronRight size={14} />
-            </div>
-          </motion.button>
+          {filtered.map((p) => {
+            const discountPct = Math.round(((p.originalPrice - p.discountedPrice) / p.originalPrice) * 100);
+            const days = Math.max(0, Math.ceil((new Date(p.bestBefore).getTime() - Date.now()) / 86400000));
+            const qty = addedItems[p.id] || 0;
+            return (
+              <motion.div
+                key={p.id}
+                variants={cardVariants}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setActiveProduct(p)}
+                className="overflow-hidden bg-white"
+                style={{ borderRadius: "20px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)" }}
+              >
+                {/* Image zone */}
+                <div className={`relative flex h-[120px] items-center justify-center bg-gradient-to-br ${p.imageColor}`}>
+                  <span className="text-5xl font-bold text-white/80">{p.name.charAt(0)}</span>
+                  {/* Discount badge */}
+                  <div className="absolute left-1.5 top-1.5 flex h-[22px] items-center justify-center rounded-full bg-[#DC2626] px-2 text-[9px] font-extrabold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
+                    {discountPct}% OFF
+                  </div>
+                  {/* Expiry badge */}
+                  <div className="absolute right-1.5 top-1.5 rounded-full bg-[#D97706] px-2 py-0.5 text-[9px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
+                    {days}d left
+                  </div>
+                  {/* AI badge */}
+                  {p.isAiMatch && (
+                    <div className="absolute bottom-1.5 left-1.5 rounded-full px-2 py-0.5 text-[8px] font-bold text-[#22C55E]" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)", fontFamily: "var(--font-outfit)" }}>
+                      AI Pick
+                    </div>
+                  )}
+                </div>
+                {/* Content */}
+                <div className="p-3">
+                  <h4 className="line-clamp-2 text-[14px] font-semibold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+                    {p.name}
+                  </h4>
+                  <p className="mt-0.5 text-[11px] text-[#8A8A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                    {p.shopName}
+                  </p>
+                  <p className="mt-1 text-[10px] font-medium text-[#D97706]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                    Best before: {days} days
+                  </p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[12px] text-[#8A8A8A] line-through" style={{ fontFamily: "var(--font-jakarta)" }}>
+                        {formatINR(p.originalPrice)}
+                      </span>
+                      <span className="text-[18px] font-bold text-[#1A6B3C]" style={{ fontFamily: "var(--font-outfit)" }}>
+                        {formatINR(p.discountedPrice)}
+                      </span>
+                    </div>
+                    {/* Add button / stepper */}
+                    {qty === 0 ? (
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => handleAdd(e, p.id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-[10px] border-[1.5px] border-[#E8E8E4] bg-white"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 5v14M5 12h14" stroke="#0A0A0A" strokeWidth="2.5" strokeLinecap="round"/>
+                        </svg>
+                      </motion.button>
+                    ) : (
+                      <motion.div
+                        initial={{ width: 32, scale: 0.9 }}
+                        animate={{ width: 70, scale: 1 }}
+                        className="flex h-8 items-center justify-between rounded-[10px] bg-[#1A6B3C] px-2"
+                      >
+                        <button onClick={(e) => { e.stopPropagation(); setAddedItems((prev) => ({ ...prev, [p.id]: Math.max(0, qty - 1) })); }} className="text-white text-sm font-bold">−</button>
+                        <span className="text-[13px] font-semibold text-white" style={{ fontFamily: "var(--font-outfit)" }}>{qty}</span>
+                        <button onClick={(e) => handleAdd(e, p.id)} className="text-white text-sm font-bold">+</button>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </motion.div>
-      )}
+      </main>
     </div>
   );
 }
-
-import { ChevronRight } from "lucide-react";

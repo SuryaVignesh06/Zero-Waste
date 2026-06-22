@@ -2,6 +2,8 @@ export type Role = "user" | "shop" | "ngo" | "volunteer";
 
 export type Screen =
   | "onboarding"
+  | "login"
+  | "otp"
   | "role-select"
   | "auth"
   | "home"

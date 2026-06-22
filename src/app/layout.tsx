@@ -1,12 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({
-  variable: "--font-inter",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -21,7 +28,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#f5f1ed",
+  themeColor: "#F7F5F0",
 };
 
 export default function RootLayout({
@@ -32,15 +39,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} antialiased`}
+        className={`${outfit.variable} ${jakarta.variable} antialiased`}
         style={{
-          background: "#f5f1ed",
-          color: "#1a1a1a",
-          fontFamily: 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
-          margin: 0,
-          padding: 0,
-          height: "100%",
-          overflow: "hidden",
+          background: "#F7F5F0",
+          color: "#0A0A0A",
+          fontFamily: 'var(--font-outfit), -apple-system, BlinkMacSystemFont, sans-serif',
+          margin: 0, padding: 0, height: "100%", overflow: "hidden",
         }}
       >
         {children}

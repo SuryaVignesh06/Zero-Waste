@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { Onboarding } from "./Onboarding";
+import { Login } from "./Login";
+import { Otp } from "./Otp";
 import { RoleSelect } from "./RoleSelect";
 import { HomeUser } from "./HomeUser";
 import { Marketplace } from "./Marketplace";
@@ -31,29 +33,23 @@ export function AppShell() {
     }
   }, [role]);
 
+  // Full-screen flows (no bottom nav)
   if (screen === "onboarding") {
-    return (
-      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-        <Onboarding />
-      </div>
-    );
+    return <div style={{ flex: 1, minHeight: 0 }}><Onboarding /></div>;
   }
-
+  if (screen === "login") {
+    return <div style={{ flex: 1, minHeight: 0 }}><Login /></div>;
+  }
+  if (screen === "otp") {
+    return <div style={{ flex: 1, minHeight: 0 }}><Otp /></div>;
+  }
   if (screen === "role-select") {
-    return (
-      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-        <RoleSelect />
-      </div>
-    );
+    return <div style={{ flex: 1, minHeight: 0 }}><RoleSelect /></div>;
   }
 
   const renderScreen = () => {
     switch (screen) {
-      case "home":
-        if (role === "shop") return <ShopDashboard />;
-        if (role === "ngo") return <NgoFeed />;
-        if (role === "volunteer") return <VolunteerMap />;
-        return <HomeUser />;
+      case "home": return role === "shop" ? <ShopDashboard /> : role === "ngo" ? <NgoFeed /> : role === "volunteer" ? <VolunteerMap /> : <HomeUser />;
       case "marketplace": return <Marketplace />;
       case "donate": return <DonateFood />;
       case "checkout": return <Checkout />;
@@ -67,8 +63,6 @@ export function AppShell() {
     }
   };
 
-  // CRITICAL: NO AnimatePresence/motion.div wrapper — it breaks flex height chain
-  // The screen renders directly inside a flex container with minHeight: 0
   return (
     <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative" }}>
       <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>

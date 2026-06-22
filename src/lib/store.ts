@@ -23,6 +23,10 @@ interface AppState {
   onboarded: boolean;
   completeOnboarding: () => void;
 
+  // Auth
+  phoneNumber: string;
+  setPhoneNumber: (p: string) => void;
+
   // Cart
   cart: CartItem[];
   addToCart: (p: Product, qty?: number) => void;
@@ -109,7 +113,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   setScreen: (s) => set((state) => ({ screen: s, prevScreen: state.screen })),
 
   onboarded: false,
-  completeOnboarding: () => set({ onboarded: true, screen: "role-select" }),
+  completeOnboarding: () => set({ onboarded: true, screen: "login" }),
+
+  phoneNumber: "",
+  setPhoneNumber: (p) => set({ phoneNumber: p }),
 
   cart: [],
   addToCart: (p, qty = 1) =>

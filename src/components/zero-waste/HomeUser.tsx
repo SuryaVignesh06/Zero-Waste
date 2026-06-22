@@ -2,214 +2,348 @@
 
 import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
+import { staggerContainer, cardVariants } from "@/lib/animations";
+import { Countdown, formatINR } from "./Countdown";
 import {
-  ProductCard,
-  RescueAlertCard,
-  SectionHeader,
-  HeroCarousel,
-  TopBar,
-} from "./ProductCard";
-import {
-  Flame,
-  HandHeart,
-  Sparkles,
-  TrendingUp,
-  Leaf,
-  Utensils,
-  ShoppingBag,
-  Clock,
-  ChevronRight,
+  MapPin, Search, Bell, ArrowUpRight, Camera, ChevronRight, Flame,
 } from "lucide-react";
 
 export function HomeUser() {
   const products = useAppStore((s) => s.products);
   const donations = useAppStore((s) => s.donations);
   const setScreen = useAppStore((s) => s.setScreen);
-  const impactPoints = useAppStore((s) => s.impactPoints);
-  const mealsSaved = useAppStore((s) => s.mealsSaved);
-  const co2Saved = useAppStore((s) => s.co2Saved);
-  const moneySaved = useAppStore((s) => s.moneySaved);
+  const setActiveProduct = useAppStore((s) => s.setActiveProduct);
+  const addToCart = useAppStore((s) => s.addToCart);
 
   const rescueDonations = donations.filter((d) => d.status === "listed").slice(0, 5);
-  const aiMatched = products.filter((p) => p.isAiMatch).slice(0, 4);
   const topDeals = products.slice(0, 6);
 
   return (
-    // CRITICAL: flex-1 + min-h-0 + flex-col so main can scroll
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-      <TopBar />
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }} className="bg-[#F7F5F0]">
+      {/* Sticky header */}
+      <div
+        className="flex items-center justify-between px-5 py-3"
+        style={{
+          background: "rgba(247,245,240,0.92)",
+          backdropFilter: "blur(16px)",
+          flexShrink: 0,
+        }}
+      >
+        <div className="flex items-center gap-2.5">
+          {/* Diamond logo */}
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="8" y="8" width="16" height="16" rx="4" transform="rotate(45 16 16)" fill="#1A6B3C" />
+            <path d="M16 11 L19 16 L16 21 L13 16 Z" fill="white" />
+          </svg>
+          <span className="text-[18px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+            Zero Waste
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setScreen("marketplace")}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white"
+            style={{ boxShadow: "0px 2px 16px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)" }}
+          >
+            <Search size={20} className="text-[#0A0A0A]" />
+          </button>
+          <button className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white" style={{ boxShadow: "0px 2px 16px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)" }}>
+            <Bell size={20} className="text-[#0A0A0A]" />
+            <span className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#DC2626]" style={{ animation: "pulse-ring-anim 2s ease-out infinite" }} />
+          </button>
+        </div>
+      </div>
 
-      {/* Scrollable main — flex-1 + min-h-0 + overflow-y-auto */}
+      {/* Scrollable content */}
       <main style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingBottom: "120px" }}>
+        {/* Location + greeting */}
         <div className="px-5 pt-3">
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex items-end justify-between">
-            <div>
-              <p className="text-[13px] font-medium text-[#8e8e93]">Good evening</p>
-              <h1 className="text-[28px] font-bold leading-tight tracking-tight text-[#1a1a1a]">Ramesh</h1>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-1.5"
+          >
+            <MapPin size={16} className="text-[#1A6B3C]" />
+            <span className="text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              Koramangala, Bangalore
+            </span>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="mt-2 text-[24px] font-bold text-[#0A0A0A]"
+            style={{ fontFamily: "var(--font-outfit)" }}
+          >
+            Good morning, Arjun
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mt-1 text-[13px] text-[#1A6B3C]"
+            style={{ fontFamily: "var(--font-jakarta)" }}
+          >
+            <b>3</b> food rescues available near you
+          </motion.p>
+        </div>
+
+        {/* Impact grid 2×2 */}
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          className="mt-5 grid grid-cols-2 gap-3 px-5"
+        >
+          {/* Card 1 — My Impact (pastel blue) */}
+          <motion.button
+            variants={cardVariants}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setScreen("impact")}
+            className="relative overflow-hidden p-5 text-left"
+            style={{ borderRadius: "24px", background: "#C8D8F0", minHeight: "160px" }}
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1E3A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                My Impact
+              </span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.7)" }}>
+                <ArrowUpRight size={16} className="text-[#1E3A8A]" />
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)" }}>
-              <TrendingUp size={12} className="text-[#d97706]" />
-              <span className="text-[12px] font-bold text-[#1a1a1a]">{impactPoints.toLocaleString("en-IN")}</span>
-              <span className="text-[10px] text-[#8e8e93]">pts</span>
+            <div className="mt-5 text-[40px] font-extrabold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              248
             </div>
+            <div className="mt-1 text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              Meals Saved
+            </div>
+            <div className="mt-2 text-[11px] text-[#1E3A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              +12 this week
+            </div>
+            {/* Decoration circle */}
+            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full" style={{ background: "rgba(30,58,138,0.08)" }} />
+          </motion.button>
+
+          {/* Card 2 — CO2 Reduced (pastel yellow) */}
+          <motion.div
+            variants={cardVariants}
+            className="relative overflow-hidden p-5"
+            style={{ borderRadius: "24px", background: "#F5E6C8", minHeight: "160px" }}
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#D97706]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                CO₂ Reduced
+              </span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.7)" }}>
+                <ArrowUpRight size={16} className="text-[#D97706]" />
+              </div>
+            </div>
+            <div className="mt-5 text-[40px] font-extrabold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              18.4
+            </div>
+            <div className="mt-1 text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              kg CO₂ Saved
+            </div>
+            <div className="mt-2 text-[11px] text-[#D97706]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              Environmental impact
+            </div>
+            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full" style={{ background: "rgba(217,119,6,0.08)" }} />
+          </motion.div>
+
+          {/* Card 3 — Money Saved (pastel green) */}
+          <motion.div
+            variants={cardVariants}
+            className="relative overflow-hidden p-5"
+            style={{ borderRadius: "24px", background: "#C8E8D0", minHeight: "160px" }}
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                Money Saved
+              </span>
+            </div>
+            <div className="mt-5 text-[36px] font-extrabold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              ₹1,240
+            </div>
+            <div className="mt-1 text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              Saved on Groceries
+            </div>
+            <div className="mt-2 text-[11px] text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              vs retail prices
+            </div>
+            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full" style={{ background: "rgba(26,107,60,0.08)" }} />
+          </motion.div>
+
+          {/* Card 4 — Donate Food (pastel clay) */}
+          <motion.button
+            variants={cardVariants}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setScreen("donate")}
+            className="relative overflow-hidden p-5 text-left"
+            style={{ borderRadius: "24px", background: "#F0D8C8", minHeight: "160px" }}
+          >
+            <div className="flex items-start justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#C25A2A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                Donate
+              </span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.7)" }}>
+                <ArrowUpRight size={16} className="text-[#C25A2A]" />
+              </div>
+            </div>
+            <div className="mt-4 flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "rgba(194,90,42,0.15)" }}>
+              <Camera size={20} className="text-[#C25A2A]" />
+            </div>
+            <div className="mt-3 text-[18px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              Donate Food
+            </div>
+            <div className="mt-1 text-[12px] text-[#6A4A3A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              List surplus food for rescue
+            </div>
+            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full" style={{ background: "rgba(194,90,42,0.08)" }} />
+          </motion.button>
+        </motion.div>
+
+        {/* Nearby Rescues */}
+        <div className="mt-7 px-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-[20px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              Nearby Rescues
+            </h2>
+            <button onClick={() => setScreen("ngo-feed")} className="flex items-center gap-1 text-[13px] font-medium text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              View all <ChevronRight size={14} />
+            </button>
+          </div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2"
+          >
+            {rescueDonations.map((d) => {
+              const hoursToExpiry = (new Date(d.expiryDeadline).getTime() - Date.now()) / 3600000;
+              const isUrgent = hoursToExpiry < 2;
+              return (
+                <motion.div
+                  key={d.id}
+                  variants={cardVariants}
+                  className="flex-shrink-0 overflow-hidden bg-white"
+                  style={{ width: "200px", borderRadius: "20px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)" }}
+                >
+                  {/* Image area */}
+                  <div className={`relative flex h-[110px] items-center justify-center bg-gradient-to-br ${d.imageColor}`}>
+                    <span className="text-4xl font-bold text-white/80">{d.donorName.charAt(0)}</span>
+                    {/* Urgency badge */}
+                    <div
+                      className="absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-bold text-white"
+                      style={{ background: isUrgent ? "#DC2626" : "#D97706", fontFamily: "var(--font-outfit)" }}
+                    >
+                      {isUrgent ? "URGENT" : `${Math.round(hoursToExpiry)}h left`}
+                    </div>
+                    {/* Distance badge */}
+                    <div
+                      className="absolute right-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+                      style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", fontFamily: "var(--font-jakarta)" }}
+                    >
+                      {d.pickupDistanceKm} km
+                    </div>
+                  </div>
+                  {/* Content */}
+                  <div className="p-3.5">
+                    <h4 className="line-clamp-2 text-[14px] font-semibold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+                      {d.title}
+                    </h4>
+                    <p className="mt-1 text-[12px] text-[#8A8A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                      {d.donorName}
+                    </p>
+                    <p className="mt-1 text-[12px] font-semibold text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                      ~{d.servings} servings
+                    </p>
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-[12px] font-semibold text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                        Claim Rescue
+                      </span>
+                      <ChevronRight size={14} className="text-[#1A6B3C]" />
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
 
-        <div className="mt-5">
-          <HeroCarousel />
-        </div>
-
-        {/* Impact stats */}
-        <section className="mt-6 px-5">
-          <SectionHeader
-            title="Community Impact"
-            icon={<div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ecfdf5]"><Leaf size={14} className="text-[#047857]" /></div>}
-          />
-          <div className="grid grid-cols-3 gap-3">
-            <ImpactStat icon={<Utensils size={14} className="text-[#047857]" />} value={String(mealsSaved)} label="Meals saved" bg="#ecfdf5" />
-            <ImpactStat icon={<Leaf size={14} className="text-[#2563eb]" />} value={`${co2Saved}kg`} label="CO2 saved" bg="#dbeafe" />
-            <ImpactStat icon={<ShoppingBag size={14} className="text-[#7c3aed]" />} value={`\u20B9${moneySaved}`} label="Money saved" bg="#ede9fe" />
-          </div>
-        </section>
-
-        {/* Rescue Alerts */}
-        <section className="mt-6 px-5">
-          <SectionHeader
-            title="Nearby Requests"
-            action="See all"
-            icon={<div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#fef3c7]"><Flame size={14} className="text-[#d97706]" /></div>}
-            onAction={() => setScreen("ngo-feed")}
-          />
-          <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2">
-            {rescueDonations.map((d, i) => (
-              <RescueAlertCard key={d.id} donation={d} index={i} />
-            ))}
-          </div>
-        </section>
-
-        {/* Donate CTA */}
-        <section className="mt-6 px-5">
-          <motion.button
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            onClick={() => setScreen("donate")}
-            whileTap={{ scale: 0.98 }}
-            className="relative w-full overflow-hidden p-5 text-left"
-            style={{ borderRadius: "24px", background: "linear-gradient(135deg, #047857, #064e3b)", boxShadow: "0 8px 24px rgba(4, 120, 87, 0.25)" }}
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-white/15">
-                <HandHeart size={26} className="text-white" strokeWidth={2.2} />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-[16px] font-bold tracking-tight text-white">Have surplus food?</h3>
-                <p className="text-[12px] text-white/85">Donate to NGOs in minutes</p>
-              </div>
-              <div className="rounded-full bg-white px-4 py-2 text-[12px] font-bold text-[#047857]">Donate</div>
-            </div>
-          </motion.button>
-        </section>
-
-        {/* AI Matched */}
-        <section className="mt-6 px-5">
-          <SectionHeader
-            title="AI Matched for you"
-            action="View all"
-            icon={<div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ede9fe]"><Sparkles size={14} className="text-[#7c3aed]" /></div>}
-            onAction={() => setScreen("marketplace")}
-          />
-          <div className="grid grid-cols-2 gap-3">
-            {aiMatched.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} />
-            ))}
-          </div>
-        </section>
-
-        {/* Top Deals */}
-        <section className="mt-6 px-5">
-          <SectionHeader
-            title="Deals near you"
-            action="See all"
-            icon={<div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#ecfdf5]"><TrendingUp size={14} className="text-[#047857]" /></div>}
-            onAction={() => setScreen("marketplace")}
-          />
-          <div className="grid grid-cols-2 gap-3">
-            {topDeals.map((p, i) => (
-              <ProductCard key={p.id} product={p} index={i} />
-            ))}
-          </div>
-        </section>
-
-        {/* Recent Activity */}
-        <section className="mt-6 px-5">
-          <SectionHeader
-            title="Recent Activity"
-            icon={<div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#fde8e0]"><Clock size={14} className="text-[#e76f51]" /></div>}
-          />
-          <div className="bg-white p-4" style={{ borderRadius: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04)" }}>
-            {[
-              { label: "Rescued wedding surplus", time: "2h ago", points: "+240 pts", color: "#047857" },
-              { label: "Bought Amul Toned Milk", time: "8h ago", points: "+12 pts", color: "#2563eb" },
-              { label: "Volunteer pickup completed", time: "1d ago", points: "+90 pts", color: "#7c3aed" },
-            ].map((a, i) => (
-              <div key={i} className={`flex items-center gap-3 py-2.5 ${i > 0 ? "border-t border-[#f3efe9]" : ""}`}>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full" style={{ background: `${a.color}15` }}>
-                  <div className="h-2 w-2 rounded-full" style={{ background: a.color }} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[12px] font-semibold text-[#1a1a1a]">{a.label}</div>
-                  <div className="text-[10px] text-[#8e8e93]">{a.time}</div>
-                </div>
-                <span className="text-[11px] font-bold" style={{ color: a.color }}>{a.points}</span>
-              </div>
-            ))}
-            <button onClick={() => setScreen("impact")} className="mt-2 flex w-full items-center justify-center gap-1 rounded-xl bg-[#f3efe9] py-2.5 text-[12px] font-semibold text-[#1a1a1a]">
-              View all activity
-              <ChevronRight size={14} />
+        {/* Marketplace Deals */}
+        <div className="mt-7 px-5">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-[20px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              Deals Near You
+            </h2>
+            <button onClick={() => setScreen("marketplace")} className="flex items-center gap-1 text-[13px] font-medium text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
+              See all <ChevronRight size={14} />
             </button>
           </div>
-        </section>
 
-        {/* Categories */}
-        <section className="mt-6 px-5">
-          <SectionHeader title="Categories" />
-          <div className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2">
-            {[
-              { label: "Dairy", bg: "#dbeafe", icon: "🥛" },
-              { label: "Bakery", bg: "#fef3c7", icon: "🍞" },
-              { label: "Veggies", bg: "#d1fae5", icon: "🥬" },
-              { label: "Fruits", bg: "#fde8e0", icon: "🍎" },
-              { label: "Snacks", bg: "#fef3c7", icon: "🍿" },
-              { label: "Staples", bg: "#ede9fe", icon: "🌾" },
-            ].map((c, i) => (
-              <motion.button
-                key={i}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setScreen("marketplace")}
-                className="flex h-16 w-20 flex-shrink-0 flex-col items-center justify-center gap-1.5"
-                style={{ borderRadius: "16px", background: c.bg }}
-              >
-                <span className="text-xl">{c.icon}</span>
-                <span className="text-[10px] font-bold text-[#1a1a1a]">{c.label}</span>
-              </motion.button>
-            ))}
-          </div>
-        </section>
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="-mx-5 flex gap-3 overflow-x-auto px-5 pb-2"
+          >
+            {topDeals.map((p) => {
+              const discountPct = Math.round(((p.originalPrice - p.discountedPrice) / p.originalPrice) * 100);
+              return (
+                <motion.div
+                  key={p.id}
+                  variants={cardVariants}
+                  onClick={() => setActiveProduct(p)}
+                  className="flex-shrink-0 overflow-hidden bg-white"
+                  style={{ width: "150px", borderRadius: "16px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06), 0px 1px 4px rgba(0,0,0,0.04)" }}
+                >
+                  {/* Image */}
+                  <div className={`relative flex h-[90px] items-center justify-center bg-gradient-to-br ${p.imageColor}`}>
+                    <span className="text-3xl font-bold text-white/80">{p.name.charAt(0)}</span>
+                    <div className="absolute left-1.5 top-1.5 rounded-full bg-[#DC2626] px-1.5 py-0.5 text-[9px] font-extrabold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
+                      {discountPct}% OFF
+                    </div>
+                    <div className="absolute right-1.5 top-1.5 rounded-full bg-[#D97706] px-1.5 py-0.5 text-[9px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
+                      {daysUntilShort(p.bestBefore)}d
+                    </div>
+                  </div>
+                  {/* Content */}
+                  <div className="p-3">
+                    <h4 className="line-clamp-2 text-[13px] font-semibold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+                      {p.name}
+                    </h4>
+                    <p className="mt-0.5 text-[10px] text-[#8A8A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
+                      {p.shopName}
+                    </p>
+                    <div className="mt-2 flex items-baseline gap-1.5">
+                      <span className="text-[12px] text-[#8A8A8A] line-through" style={{ fontFamily: "var(--font-jakarta)" }}>
+                        {formatINR(p.originalPrice)}
+                      </span>
+                      <span className="text-[16px] font-bold text-[#1A6B3C]" style={{ fontFamily: "var(--font-outfit)" }}>
+                        {formatINR(p.discountedPrice)}
+                      </span>
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => { e.stopPropagation(); addToCart(p); }}
+                      className="mt-2.5 flex h-8 w-full items-center justify-center rounded-[10px] border-[1.5px] border-[#1A6B3C] text-[13px] font-semibold text-[#1A6B3C]"
+                      style={{ fontFamily: "var(--font-jakarta)" }}
+                    >
+                      Add
+                    </motion.button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
       </main>
     </div>
   );
 }
 
-function ImpactStat({ icon, value, label, bg }: { icon: React.ReactNode; value: string; label: string; bg: string }) {
-  return (
-    <div className="flex flex-col items-start p-3.5" style={{ borderRadius: "20px", background: bg }}>
-      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white">{icon}</div>
-      <div className="mt-2 text-[16px] font-bold text-[#1a1a1a]">{value}</div>
-      <div className="text-[10px] text-[#4a4a4a]">{label}</div>
-    </div>
-  );
+function daysUntilShort(iso: string): number {
+  const diff = new Date(iso).getTime() - Date.now();
+  return Math.max(0, Math.ceil(diff / 86_400_000));
 }
