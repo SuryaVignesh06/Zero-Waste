@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#FCFCF9",
+  themeColor: "#f5f1ed",
 };
 
 export default function RootLayout({
@@ -32,12 +32,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${poppins.variable} antialiased`}
+        className={`${inter.variable} antialiased`}
         style={{
-          background: "#FCFCF9",
-          color: "#111827",
-          fontFamily:
-            'var(--font-poppins), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+          background: "#f5f1ed",
+          color: "#1a1a1a",
+          fontFamily: 'var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+          margin: 0,
+          padding: 0,
+          height: "100%",
+          overflow: "hidden",
         }}
       >
         {children}

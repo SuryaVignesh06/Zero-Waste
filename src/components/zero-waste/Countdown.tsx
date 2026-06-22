@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 interface CountdownProps {
-  deadline: string; // ISO
+  deadline: string;
   variant?: "compact" | "full";
   onExpire?: () => void;
 }
@@ -33,9 +33,7 @@ export function Countdown({ deadline, variant = "compact", onExpire }: Countdown
   }, [deadline, onExpire]);
 
   if (expired) {
-    return (
-      <span className="font-mono text-zw-danger font-semibold">EXPIRED</span>
-    );
+    return <span className="font-mono text-[#dc2626] font-semibold">EXPIRED</span>;
   }
 
   const totalSeconds = Math.floor(remaining / 1000);
@@ -50,61 +48,29 @@ export function Countdown({ deadline, variant = "compact", onExpire }: Countdown
     return (
       <div className="flex items-center gap-1 font-mono">
         <TimeBox value={pad(hours)} label="HRS" urgent={isUrgent} />
-        <span
-          className={`text-lg font-bold ${isUrgent ? "text-zw-danger" : isWarning ? "text-zw-warning" : "text-zw-primary-700"}`}
-        >
-          :
-        </span>
+        <span className={`text-lg font-bold ${isUrgent ? "text-[#dc2626]" : isWarning ? "text-[#f59e0b]" : "text-[#047857]"}`}>:</span>
         <TimeBox value={pad(mins)} label="MIN" urgent={isUrgent} />
-        <span
-          className={`text-lg font-bold ${isUrgent ? "text-zw-danger" : isWarning ? "text-zw-warning" : "text-zw-primary-700"}`}
-        >
-          :
-        </span>
+        <span className={`text-lg font-bold ${isUrgent ? "text-[#dc2626]" : isWarning ? "text-[#f59e0b]" : "text-[#047857]"}`}>:</span>
         <TimeBox value={pad(secs)} label="SEC" urgent={isUrgent} />
       </div>
     );
   }
 
   return (
-    <span
-      className={`font-mono text-sm font-semibold tabular-nums ${
-        isUrgent
-          ? "text-zw-danger"
-          : isWarning
-            ? "text-zw-warning"
-            : "text-zw-primary-700"
-      }`}
-    >
+    <span className={`font-mono text-sm font-semibold tabular-nums ${isUrgent ? "text-[#dc2626]" : isWarning ? "text-[#f59e0b]" : "text-[#047857]"}`}>
       {hours > 0 ? `${hours}h ` : ""}
       {pad(mins)}:{pad(secs)}
     </span>
   );
 }
 
-function TimeBox({
-  value,
-  label,
-  urgent,
-}: {
-  value: string;
-  label: string;
-  urgent: boolean;
-}) {
+function TimeBox({ value, label, urgent }: { value: string; label: string; urgent: boolean }) {
   return (
     <div className="flex flex-col items-center">
-      <div
-        className={`min-w-9 rounded-md px-2 py-1 text-center font-mono text-lg font-bold tabular-nums ${
-          urgent
-            ? "bg-zw-danger/10 text-zw-danger"
-            : "bg-zw-primary-50 text-zw-primary-800"
-        }`}
-      >
+      <div className={`min-w-9 rounded-md px-2 py-1 text-center font-mono text-lg font-bold tabular-nums ${urgent ? "bg-[#fef2f2] text-[#dc2626]" : "bg-[#ecfdf5] text-[#047857]"}`}>
         {value}
       </div>
-      <span className="mt-0.5 text-[9px] font-medium uppercase tracking-wider text-zw-text-muted">
-        {label}
-      </span>
+      <span className="mt-0.5 text-[9px] font-medium uppercase tracking-wider text-[#8e8e93]">{label}</span>
     </div>
   );
 }
@@ -114,9 +80,7 @@ export function formatRelativeTime(iso: string): string {
   const hours = Math.floor(Math.abs(diff) / 3600_000);
   const mins = Math.floor((Math.abs(diff) % 3600_000) / 60_000);
   const isPast = diff < 0;
-  if (hours === 0) {
-    return isPast ? `${mins}m ago` : `in ${mins}m`;
-  }
+  if (hours === 0) return isPast ? `${mins}m ago` : `in ${mins}m`;
   return isPast ? `${hours}h ago` : `in ${hours}h`;
 }
 

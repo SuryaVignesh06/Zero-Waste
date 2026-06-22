@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/lib/store";
 import { Onboarding } from "./Onboarding";
 import { RoleSelect } from "./RoleSelect";
@@ -21,35 +20,33 @@ import { AiAssistant } from "./AiAssistant";
 export function AppShell() {
   const { screen, role, setScreen } = useAppStore();
 
-  // Reset to role's home when role changes
   useEffect(() => {
     if (role) {
       switch (role) {
-        case "shop":
-          setScreen("shop-dashboard");
-          break;
-        case "ngo":
-          setScreen("ngo-feed");
-          break;
-        case "volunteer":
-          setScreen("volunteer-map");
-          break;
-        default:
-          setScreen("home");
+        case "shop": setScreen("shop-dashboard"); break;
+        case "ngo": setScreen("ngo-feed"); break;
+        case "volunteer": setScreen("volunteer-map"); break;
+        default: setScreen("home");
       }
     }
   }, [role]);
 
-  // Show onboarding first
   if (screen === "onboarding") {
-    return <Onboarding />;
+    return (
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        <Onboarding />
+      </div>
+    );
   }
 
   if (screen === "role-select") {
-    return <RoleSelect />;
+    return (
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        <RoleSelect />
+      </div>
+    );
   }
 
-  // Pick the main screen content
   const renderScreen = () => {
     switch (screen) {
       case "home":
@@ -57,45 +54,26 @@ export function AppShell() {
         if (role === "ngo") return <NgoFeed />;
         if (role === "volunteer") return <VolunteerMap />;
         return <HomeUser />;
-      case "marketplace":
-        return <Marketplace />;
-      case "donate":
-        return <DonateFood />;
-      case "checkout":
-        return <Checkout />;
-      case "order-tracking":
-        return <OrderTracking />;
-      case "ngo-feed":
-        return <NgoFeed />;
-      case "volunteer-map":
-        return <VolunteerMap />;
-      case "shop-dashboard":
-        return <ShopDashboard />;
-      case "impact":
-        return <ImpactDashboard />;
-      case "profile":
-        return <Profile />;
-      default:
-        return <HomeUser />;
+      case "marketplace": return <Marketplace />;
+      case "donate": return <DonateFood />;
+      case "checkout": return <Checkout />;
+      case "order-tracking": return <OrderTracking />;
+      case "ngo-feed": return <NgoFeed />;
+      case "volunteer-map": return <VolunteerMap />;
+      case "shop-dashboard": return <ShopDashboard />;
+      case "impact": return <ImpactDashboard />;
+      case "profile": return <Profile />;
+      default: return <HomeUser />;
     }
   };
 
+  // CRITICAL: NO AnimatePresence/motion.div wrapper — it breaks flex height chain
+  // The screen renders directly inside a flex container with minHeight: 0
   return (
-    <div className="relative flex h-full flex-col">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={screen}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="flex-1"
-        >
-          {renderScreen()}
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Overlays */}
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", position: "relative" }}>
+      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        {renderScreen()}
+      </div>
       <ProductDetailSheet />
       <CartSheet />
       <AiAssistant />

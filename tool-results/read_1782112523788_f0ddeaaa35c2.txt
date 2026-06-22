@@ -1,0 +1,675 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState } from "react";
+     4→     4→import { motion, AnimatePresence } from "framer-motion";
+     5→     5→import { useAppStore } from "@/lib/store";
+     6→     6→import {
+     7→     7→  ChevronLeft,
+     8→     8→  Camera,
+     9→     9→  Sparkles,
+    10→    10→  Check,
+    11→    11→  MapPin,
+    12→    12→  Clock,
+    13→    13→  Calendar,
+    14→    14→  Utensils,
+    15→    15→  Apple,
+    16→    16→  Package,
+    17→    17→  ChevronRight,
+    18→    18→  PartyPopper,
+    19→    19→  Loader2,
+    20→    20→} from "lucide-react";
+    21→    21→
+    22→    22→const displayFont = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif";
+    23→    23→
+    24→    24→const CATEGORIES = [
+    25→    25→  { id: "cooked", label: "Cooked Food", icon: Utensils },
+    26→    26→  { id: "raw", label: "Raw / Vegetables", icon: Apple },
+    27→    27→  { id: "packaged", label: "Packaged", icon: Package },
+    28→    28→];
+    29→    29→
+    30→    30→const AI_RECOGNITION_RESULT = {
+    31→    31→  title: "Veg Biryani + Curd Rice (Serves ~15)",
+    32→    32→  category: "cooked",
+    33→    33→  quantity: 15,
+    34→    34→  servings: 15,
+    35→    35→  aiFreshness: 0.92,
+    36→    36→  suggestedExpiry: 5,
+    37→    37→  detectedItems: [
+    38→    38→    "Vegetable biryani (~10 servings)",
+    39→    39→    "Curd rice (~5 servings)",
+    40→    40→    "Sealed packaging detected",
+    41→    41→  ],
+    42→    42→};
+    43→    43→
+    44→    44→export function DonateFood() {
+    45→    45→  const step = useAppStore((s) => s.donateStep);
+    46→    46→  const setStep = useAppStore((s) => s.setDonateStep);
+    47→    47→  const form = useAppStore((s) => s.donateForm);
+    48→    48→  const setForm = useAppStore((s) => s.setDonateForm);
+    49→    49→  const resetForm = useAppStore((s) => s.resetDonateForm);
+    50→    50→  const setScreen = useAppStore((s) => s.setScreen);
+    51→    51→  const [aiLoading, setAiLoading] = useState(false);
+    52→    52→  const [aiDone, setAiDone] = useState(false);
+    53→    53→  const [confirmed, setConfirmed] = useState(false);
+    54→    54→
+    55→    55→  const handleAiRecognize = () => {
+    56→    56→    setAiLoading(true);
+    57→    57→    setTimeout(() => {
+    58→    58→      setAiLoading(false);
+    59→    59→      setAiDone(true);
+    60→    60→      setForm({
+    61→    61→        title: AI_RECOGNITION_RESULT.title,
+    62→    62→        category: AI_RECOGNITION_RESULT.category,
+    63→    63→        quantity: AI_RECOGNITION_RESULT.quantity,
+    64→    64→        servings: AI_RECOGNITION_RESULT.servings,
+    65→    65→        expiryHours: AI_RECOGNITION_RESULT.suggestedExpiry,
+    66→    66→        aiRecognized: true,
+    67→    67→      });
+    68→    68→    }, 1800);
+    69→    69→  };
+    70→    70→
+    71→    71→  const handleConfirm = () => {
+    72→    72→    setConfirmed(true);
+    73→    73→    setTimeout(() => {
+    74→    74→      resetForm();
+    75→    75→      setConfirmed(false);
+    76→    76→      setScreen("home");
+    77→    77→    }, 2200);
+    78→    78→  };
+    79→    79→
+    80→    80→  const canProceed =
+    81→    81→    (step === 1 && form.title && form.quantity > 0) ||
+    82→    82→    (step === 2 && form.pickupAddress) ||
+    83→    83→    step === 3;
+    84→    84→
+    85→    85→  return (
+    86→    86→    <div className="flex h-full flex-col bg-[#FCFCF9]">
+    87→    87→      {/* Header */}
+    88→    88→      <div className="bg-white px-5 pb-4 pt-5" style={{ boxShadow: "0 2px 12px rgba(17, 24, 39, 0.04)" }}>
+    89→    89→        <div className="mb-4 flex items-center gap-3">
+    90→    90→          <button
+    91→    91→            onClick={() => {
+    92→    92→              if (step === 1) setScreen("home");
+    93→    93→              else setStep(step - 1);
+    94→    94→            }}
+    95→    95→            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f5f9] active:scale-95"
+    96→    96→          >
+    97→    97→            <ChevronLeft size={18} className="text-[#111827]" />
+    98→    98→          </button>
+    99→    99→          <h1
+   100→   100→            className="text-lg font-bold tracking-tight text-[#111827]"
+   101→   101→            style={{ fontFamily: displayFont }}
+   102→   102→          >
+   103→   103→            Donate Food
+   104→   104→          </h1>
+   105→   105→        </div>
+   106→   106→
+   107→   107→        {/* Stepper */}
+   108→   108→        <div className="flex items-center gap-2">
+   109→   109→          {[1, 2, 3].map((s, i) => (
+   110→   110→            <div key={s} className="flex flex-1 items-center gap-2">
+   111→   111→              <div className="flex items-center gap-2">
+   112→   112→                <motion.div
+   113→   113→                  initial={false}
+   114→   114→                  animate={{
+   115→   115→                    backgroundColor:
+   116→   116→                      step >= s ? "#16A34A" : "#e2e8f0",
+   117→   117→                    scale: step === s ? 1.1 : 1,
+   118→   118→                  }}
+   119→   119→                  className="flex h-7 w-7 items-center justify-center rounded-full"
+   120→   120→                >
+   121→   121→                  {step > s ? (
+   122→   122→                    <Check size={14} strokeWidth={3} className="text-white" />
+   123→   123→                  ) : (
+   124→   124→                    <span className="text-[12px] font-bold text-white">{s}</span>
+   125→   125→                  )}
+   126→   126→                </motion.div>
+   127→   127→                <span
+   128→   128→                  className={`text-[11px] font-semibold ${step >= s ? "text-[#111827]" : "text-[#94a3b8]"}`}
+   129→   129→                >
+   130→   130→                  {["What", "When & Where", "Review"][i]}
+   131→   131→                </span>
+   132→   132→              </div>
+   133→   133→              {i < 2 && (
+   134→   134→                <div className="relative h-0.5 flex-1 overflow-hidden rounded-full bg-[#e2e8f0]">
+   135→   135→                  <motion.div
+   136→   136→                    initial={false}
+   137→   137→                    animate={{ width: step > s ? "100%" : "0%" }}
+   138→   138→                    transition={{ duration: 0.3 }}
+   139→   139→                    className="absolute inset-y-0 left-0 bg-[#16A34A]"
+   140→   140→                  />
+   141→   141→                </div>
+   142→   142→              )}
+   143→   143→            </div>
+   144→   144→          ))}
+   145→   145→        </div>
+   146→   146→      </div>
+   147→   147→
+   148→   148→      {/* Steps — scrollable */}
+   149→   149→      <main className="flex-1 overflow-y-auto zw-scroll px-5 pb-32 pt-5">
+   150→   150→        <AnimatePresence mode="wait">
+   151→   151→          {step === 1 && (
+   152→   152→            <motion.div
+   153→   153→              key="step1"
+   154→   154→              initial={{ opacity: 0, x: 30 }}
+   155→   155→              animate={{ opacity: 1, x: 0 }}
+   156→   156→              exit={{ opacity: 0, x: -30 }}
+   157→   157→              transition={{ duration: 0.3 }}
+   158→   158→            >
+   159→   159→              {/* Food image uploader card */}
+   160→   160→              <div className="bg-white p-5" style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}>
+   161→   161→                <h2
+   162→   162→                  className="text-base font-bold text-[#111827]"
+   163→   163→                  style={{ fontFamily: displayFont }}
+   164→   164→                >
+   165→   165→                  Add photos of the food
+   166→   166→                </h2>
+   167→   167→                <p className="mt-1 text-[12px] text-[#64748b]">
+   168→   168→                  Our AI will identify the food and suggest details
+   169→   169→                </p>
+   170→   170→
+   171→   171→                <div className="mt-4 grid grid-cols-3 gap-2">
+   172→   172→                  <button
+   173→   173→                    onClick={handleAiRecognize}
+   174→   174→                    className="relative flex aspect-square flex-col items-center justify-center gap-1 border-2 border-dashed border-[#86efac] bg-[#f0fdf4] active:scale-95"
+   175→   175→                    style={{ borderRadius: 22 }}
+   176→   176→                  >
+   177→   177→                    {aiLoading ? (
+   178→   178→                      <Loader2 size={20} className="animate-spin text-[#16A34A]" />
+   179→   179→                    ) : aiDone ? (
+   180→   180→                      <motion.div
+   181→   181→                        initial={{ scale: 0 }}
+   182→   182→                        animate={{ scale: 1 }}
+   183→   183→                        className="flex h-full w-full flex-col items-center justify-center"
+   184→   184→                        style={{
+   185→   185→                          borderRadius: 20,
+   186→   186→                          background: "linear-gradient(135deg, #dcfce7, #bbf7d0)",
+   187→   187→                        }}
+   188→   188→                      >
+   189→   189→                        <Check size={24} className="text-[#16A34A]" />
+   190→   190→                      </motion.div>
+   191→   191→                    ) : (
+   192→   192→                      <>
+   193→   193→                        <Camera size={22} className="text-[#16A34A]" />
+   194→   194→                        <span className="text-[10px] font-semibold text-[#16A34A]">
+   195→   195→                          Add photo
+   196→   196→                        </span>
+   197→   197→                      </>
+   198→   198→                    )}
+   199→   199→                  </button>
+   200→   200→                  {[0, 1].map((i) => (
+   201→   201→                    <div
+   202→   202→                      key={i}
+   203→   203→                      className="flex aspect-square items-center justify-center border border-dashed border-[#e5e7eb] bg-[#f8fafc]"
+   204→   204→                      style={{ borderRadius: 22 }}
+   205→   205→                    >
+   206→   206→                      <Camera size={18} className="text-[#94a3b8]" />
+   207→   207→                    </div>
+   208→   208→                  ))}
+   209→   209→                </div>
+   210→   210→
+   211→   211→                {/* AI recognition result */}
+   212→   212→                <AnimatePresence>
+   213→   213→                  {aiDone && (
+   214→   214→                    <motion.div
+   215→   215→                      initial={{ y: 20, opacity: 0, height: 0 }}
+   216→   216→                      animate={{ y: 0, opacity: 1, height: "auto" }}
+   217→   217→                      exit={{ y: -20, opacity: 0, height: 0 }}
+   218→   218→                      className="mt-4 overflow-hidden p-4"
+   219→   219→                      style={{
+   220→   220→                        borderRadius: 22,
+   221→   221→                        background: "linear-gradient(135deg, #f0fdf4, #ffffff)",
+   222→   222→                      }}
+   223→   223→                    >
+   224→   224→                      <div className="flex items-center gap-2">
+   225→   225→                        <div className="zw-ai-border h-7 w-7 rounded-lg p-[1.5px]">
+   226→   226→                          <div className="flex h-full w-full items-center justify-center rounded-[6px] bg-white">
+   227→   227→                            <Sparkles size={13} className="text-[#16A34A]" />
+   228→   228→                          </div>
+   229→   229→                        </div>
+   230→   230→                        <span
+   231→   231→                          className="text-[13px] font-bold text-[#111827]"
+   232→   232→                          style={{ fontFamily: displayFont }}
+   233→   233→                        >
+   234→   234→                          AI Recognition Complete
+   235→   235→                        </span>
+   236→   236→                        <span className="ml-auto rounded-full bg-[#f0fdf4] px-2 py-0.5 text-[10px] font-bold text-[#16A34A]">
+   237→   237→                          {Math.round(AI_RECOGNITION_RESULT.aiFreshness * 100)}% fresh
+   238→   238→                        </span>
+   239→   239→                      </div>
+   240→   240→                      <div className="mt-3 space-y-1.5">
+   241→   241→                        {AI_RECOGNITION_RESULT.detectedItems.map((item, i) => (
+   242→   242→                          <motion.div
+   243→   243→                            key={i}
+   244→   244→                            initial={{ x: -10, opacity: 0 }}
+   245→   245→                            animate={{ x: 0, opacity: 1 }}
+   246→   246→                            transition={{ delay: i * 0.1 }}
+   247→   247→                            className="flex items-center gap-2"
+   248→   248→                          >
+   249→   249→                            <Check
+   250→   250→                              size={12}
+   251→   251→                              strokeWidth={3}
+   252→   252→                              className="text-[#16A34A]"
+   253→   253→                            />
+   254→   254→                            <span className="text-[12px] text-[#64748b]">
+   255→   255→                              {item}
+   256→   256→                            </span>
+   257→   257→                          </motion.div>
+   258→   258→                        ))}
+   259→   259→                      </div>
+   260→   260→                    </motion.div>
+   261→   261→                  )}
+   262→   262→                </AnimatePresence>
+   263→   263→              </div>
+   264→   264→
+   265→   265→              {/* Description card */}
+   266→   266→              <div className="mt-4 bg-white p-5" style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}>
+   267→   267→                <label className="text-[12px] font-semibold text-[#111827]">
+   268→   268→                  Food title
+   269→   269→                </label>
+   270→   270→                <input
+   271→   271→                  value={form.title}
+   272→   272→                  onChange={(e) => setForm({ title: e.target.value })}
+   273→   273→                  placeholder="e.g., Wedding Reception Surplus"
+   274→   274→                  className="mt-1.5 h-12 w-full bg-[#f8fafc] px-3 text-[13px] text-[#111827] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#86efac]"
+   275→   275→                  style={{ borderRadius: 22 }}
+   276→   276→                />
+   277→   277→
+   278→   278→                <label className="mt-4 block text-[12px] font-semibold text-[#111827]">
+   279→   279→                  Category
+   280→   280→                </label>
+   281→   281→                <div className="mt-1.5 grid grid-cols-3 gap-2">
+   282→   282→                  {CATEGORIES.map((c) => {
+   283→   283→                    const Icon = c.icon;
+   284→   284→                    const active = form.category === c.id;
+   285→   285→                    return (
+   286→   286→                      <button
+   287→   287→                        key={c.id}
+   288→   288→                        onClick={() => setForm({ category: c.id })}
+   289→   289→                        className="flex flex-col items-center gap-1.5 p-3 transition-all"
+   290→   290→                        style={{
+   291→   291→                          borderRadius: 22,
+   292→   292→                          background: active ? "#f0fdf4" : "#f8fafc",
+   293→   293→                          border: active
+   294→   294→                            ? "2px solid #16A34A"
+   295→   295→                            : "2px solid transparent",
+   296→   296→                        }}
+   297→   297→                      >
+   298→   298→                        <Icon
+   299→   299→                          size={20}
+   300→   300→                          className={
+   301→   301→                            active ? "text-[#16A34A]" : "text-[#94a3b8]"
+   302→   302→                          }
+   303→   303→                        />
+   304→   304→                        <span
+   305→   305→                          className={`text-[10px] font-semibold ${active ? "text-[#16A34A]" : "text-[#64748b]"}`}
+   306→   306→                        >
+   307→   307→                          {c.label}
+   308→   308→                        </span>
+   309→   309→                      </button>
+   310→   310→                    );
+   311→   311→                  })}
+   312→   312→                </div>
+   313→   313→
+   314→   314→                <label className="mt-4 block text-[12px] font-semibold text-[#111827]">
+   315→   315→                  Number of servings
+   316→   316→                </label>
+   317→   317→                <div className="mt-1.5 flex items-center gap-2">
+   318→   318→                  <button
+   319→   319→                    onClick={() =>
+   320→   320→                      setForm({
+   321→   321→                        quantity: Math.max(1, form.quantity - 5),
+   322→   322→                        servings: Math.max(1, form.quantity - 5),
+   323→   323→                      })
+   324→   324→                    }
+   325→   325→                    className="flex h-12 w-12 items-center justify-center bg-[#f1f5f9] text-xl font-bold text-[#111827] active:scale-95"
+   326→   326→                    style={{ borderRadius: 22 }}
+   327→   327→                  >
+   328→   328→                    -
+   329→   329→                  </button>
+   330→   330→                  <div className="flex h-12 flex-1 items-center justify-center bg-[#f8fafc]" style={{ borderRadius: 22 }}>
+   331→   331→                    <span
+   332→   332→                      className="text-base font-bold"
+   333→   333→                      style={{ fontFamily: displayFont }}
+   334→   334→                    >
+   335→   335→                      {form.servings}
+   336→   336→                    </span>
+   337→   337→                    <span className="ml-1 text-[12px] text-[#64748b]">servings</span>
+   338→   338→                  </div>
+   339→   339→                  <button
+   340→   340→                    onClick={() =>
+   341→   341→                      setForm({
+   342→   342→                        quantity: form.quantity + 5,
+   343→   343→                        servings: form.servings + 5,
+   344→   344→                      })
+   345→   345→                    }
+   346→   346→                    className="flex h-12 w-12 items-center justify-center bg-[#f1f5f9] text-xl font-bold text-[#111827] active:scale-95"
+   347→   347→                    style={{ borderRadius: 22 }}
+   348→   348→                  >
+   349→   349→                    +
+   350→   350→                  </button>
+   351→   351→                </div>
+   352→   352→              </div>
+   353→   353→            </motion.div>
+   354→   354→          )}
+   355→   355→
+   356→   356→          {step === 2 && (
+   357→   357→            <motion.div
+   358→   358→              key="step2"
+   359→   359→              initial={{ opacity: 0, x: 30 }}
+   360→   360→              animate={{ opacity: 1, x: 0 }}
+   361→   361→              exit={{ opacity: 0, x: -30 }}
+   362→   362→              transition={{ duration: 0.3 }}
+   363→   363→            >
+   364→   364→              {/* Location card with mini map */}
+   365→   365→              <div className="bg-white p-5" style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}>
+   366→   366→                <h2
+   367→   367→                  className="text-base font-bold text-[#111827]"
+   368→   368→                  style={{ fontFamily: displayFont }}
+   369→   369→                >
+   370→   370→                  Pickup location & timing
+   371→   371→                </h2>
+   372→   372→                <p className="mt-1 text-[12px] text-[#64748b]">
+   373→   373→                  NGO volunteers need this info to plan pickup
+   374→   374→                </p>
+   375→   375→
+   376→   376→                {/* Mini map */}
+   377→   377→                <div className="mt-4 relative h-44 overflow-hidden bg-[#f1f5f9]" style={{ borderRadius: 28 }}>
+   378→   378→                  <div
+   379→   379→                    className="absolute inset-0 opacity-50"
+   380→   380→                    style={{
+   381→   381→                      backgroundImage:
+   382→   382→                        "linear-gradient(0deg, #e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)",
+   383→   383→                      backgroundSize: "24px 24px",
+   384→   384→                    }}
+   385→   385→                  />
+   386→   386→                  <motion.div
+   387→   387→                    initial={{ scale: 0 }}
+   388→   388→                    animate={{ scale: 1 }}
+   389→   389→                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+   390→   390→                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+   391→   391→                  >
+   392→   392→                    <div className="zw-urgency-pulse-amber relative flex h-9 w-9 items-center justify-center rounded-full bg-[#f59e0b] ring-4 ring-white" style={{ boxShadow: "0 4px 12px rgba(245, 158, 11, 0.3)" }}>
+   393→   393→                      <MapPin size={16} className="text-white" />
+   394→   394→                    </div>
+   395→   395→                  </motion.div>
+   396→   396→                  <div className="absolute bottom-2 right-2 rounded-full bg-white px-2.5 py-1 text-[10px] font-medium text-[#64748b]" style={{ boxShadow: "0 2px 8px rgba(17, 24, 39, 0.08)" }}>
+   397→   397→                    Anna Nagar, Chennai
+   398→   398→                  </div>
+   399→   399→                </div>
+   400→   400→
+   401→   401→                <label className="mt-4 block text-[12px] font-semibold text-[#111827]">
+   402→   402→                  Pickup address
+   403→   403→                </label>
+   404→   404→                <textarea
+   405→   405→                  value={form.pickupAddress}
+   406→   406→                  onChange={(e) => setForm({ pickupAddress: e.target.value })}
+   407→   407→                  placeholder="Flat / House no, Street, Area, Landmark"
+   408→   408→                  rows={3}
+   409→   409→                  className="mt-1.5 w-full bg-[#f8fafc] p-3 text-[13px] text-[#111827] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#86efac]"
+   410→   410→                  style={{ borderRadius: 22 }}
+   411→   411→                />
+   412→   412→
+   413→   413→                <div className="mt-4 grid grid-cols-2 gap-3">
+   414→   414→                  <div>
+   415→   415→                    <label className="text-[12px] font-semibold text-[#111827]">
+   416→   416→                      Pickup from
+   417→   417→                    </label>
+   418→   418→                    <div className="mt-1.5 flex h-12 items-center gap-2 bg-[#f8fafc] px-3" style={{ borderRadius: 22 }}>
+   419→   419→                      <Clock size={14} className="text-[#94a3b8]" />
+   420→   420→                      <span className="text-[13px] font-medium text-[#111827]">Now</span>
+   421→   421→                    </div>
+   422→   422→                  </div>
+   423→   423→                  <div>
+   424→   424→                    <label className="text-[12px] font-semibold text-[#111827]">
+   425→   425→                      Until
+   426→   426→                    </label>
+   427→   427→                    <div className="mt-1.5 flex h-12 items-center gap-2 bg-[#f8fafc] px-3" style={{ borderRadius: 22 }}>
+   428→   428→                      <Calendar size={14} className="text-[#94a3b8]" />
+   429→   429→                      <span className="text-[13px] font-medium text-[#111827]">in 2 hours</span>
+   430→   430→                    </div>
+   431→   431→                  </div>
+   432→   432→                </div>
+   433→   433→              </div>
+   434→   434→
+   435→   435→              {/* AI expiry suggestion */}
+   436→   436→              <div className="mt-4 bg-white p-5" style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}>
+   437→   437→                <div className="flex items-center gap-2">
+   438→   438→                  <div className="zw-ai-border h-7 w-7 rounded-lg p-[1.5px]">
+   439→   439→                    <div className="flex h-full w-full items-center justify-center rounded-[6px] bg-white">
+   440→   440→                      <Sparkles size={13} className="text-[#16A34A]" />
+   441→   441→                    </div>
+   442→   442→                  </div>
+   443→   443→                  <span
+   444→   444→                    className="text-[12px] font-bold text-[#111827]"
+   445→   445→                    style={{ fontFamily: displayFont }}
+   446→   446→                  >
+   447→   447→                    AI suggests expiry window
+   448→   448→                  </span>
+   449→   449→                </div>
+   450→   450→                <p className="mt-1 text-[11px] text-[#64748b]">
+   451→   451→                  Based on the food type and storage, consume within:
+   452→   452→                </p>
+   453→   453→                <div className="mt-2 flex items-center gap-2">
+   454→   454→                  {[3, 5, 8].map((h) => (
+   455→   455→                    <button
+   456→   456→                      key={h}
+   457→   457→                      onClick={() => setForm({ expiryHours: h })}
+   458→   458→                      className="rounded-full px-4 py-2 text-[11px] font-semibold transition-all active:scale-95"
+   459→   459→                      style={{
+   460→   460→                        background:
+   461→   461→                          form.expiryHours === h
+   462→   462→                            ? "linear-gradient(135deg, #16a34a, #15803d)"
+   463→   463→                            : "#f1f5f9",
+   464→   464→                        color: form.expiryHours === h ? "#ffffff" : "#64748b",
+   465→   465→                      }}
+   466→   466→                    >
+   467→   467→                      {h} hours
+   468→   468→                    </button>
+   469→   469→                  ))}
+   470→   470→                </div>
+   471→   471→              </div>
+   472→   472→            </motion.div>
+   473→   473→          )}
+   474→   474→
+   475→   475→          {step === 3 && (
+   476→   476→            <motion.div
+   477→   477→              key="step3"
+   478→   478→              initial={{ opacity: 0, x: 30 }}
+   479→   479→              animate={{ opacity: 1, x: 0 }}
+   480→   480→              exit={{ opacity: 0, x: -30 }}
+   481→   481→              transition={{ duration: 0.3 }}
+   482→   482→            >
+   483→   483→              <div className="bg-white p-5" style={{ borderRadius: 32, boxShadow: "0 4px 20px rgba(17, 24, 39, 0.06)" }}>
+   484→   484→                <h2
+   485→   485→                  className="text-base font-bold text-[#111827]"
+   486→   486→                  style={{ fontFamily: displayFont }}
+   487→   487→                >
+   488→   488→                  Review your donation
+   489→   489→                </h2>
+   490→   490→                <p className="mt-1 text-[12px] text-[#64748b]">
+   491→   491→                  Make sure everything looks correct
+   492→   492→                </p>
+   493→   493→
+   494→   494→                <div className="mt-4 flex items-center gap-3 border-b border-[#f1f5f9] pb-4">
+   495→   495→                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl" style={{ background: "linear-gradient(135deg, #dcfce7, #bbf7d0)" }}>
+   496→   496→                    <Utensils size={22} className="text-[#16A34A]" />
+   497→   497→                  </div>
+   498→   498→                  <div className="flex-1">
+   499→   499→                    <h3
+   500→   500→                      className="text-[14px] font-bold text-[#111827]"
+   501→   501→                      style={{ fontFamily: displayFont }}
+   502→   502→                    >
+   503→   503→                      {form.title || "Veg Biryani + Curd Rice"}
+   504→   504→                    </h3>
+   505→   505→                    <p className="text-[11px] text-[#64748b]">
+   506→   506→                      {form.servings} servings · {form.category} food
+   507→   507→                    </p>
+   508→   508→                  </div>
+   509→   509→                </div>
+   510→   510→
+   511→   511→                <div className="divide-y divide-[#f1f5f9]">
+   512→   512→                  <SummaryRow icon={<MapPin size={14} />} label="Pickup address" value={form.pickupAddress || "Anna Nagar, Chennai"} />
+   513→   513→                  <SummaryRow icon={<Clock size={14} />} label="Pickup window" value="Now — in 2 hours" />
+   514→   514→                  <SummaryRow icon={<Sparkles size={14} />} label="AI expiry window" value={`${form.expiryHours} hours from now`} />
+   515→   515→                  <SummaryRow icon={<Calendar size={14} />} label="NGO preference" value="Auto-match nearest NGO" />
+   516→   516→                </div>
+   517→   517→              </div>
+   518→   518→
+   519→   519→              {/* Impact preview */}
+   520→   520→              <div
+   521→   521→                className="mt-4 p-5 text-white"
+   522→   522→                style={{
+   523→   523→                  borderRadius: 32,
+   524→   524→                  background: "linear-gradient(135deg, #16a34a, #15803d)",
+   525→   525→                  boxShadow: "0 8px 32px rgba(22, 163, 74, 0.25)",
+   526→   526→                }}
+   527→   527→              >
+   528→   528→                <div className="flex items-center gap-2">
+   529→   529→                  <Sparkles size={16} className="text-white" />
+   530→   530→                  <span
+   531→   531→                    className="text-[13px] font-bold"
+   532→   532→                    style={{ fontFamily: displayFont }}
+   533→   533→                  >
+   534→   534→                    Predicted Impact
+   535→   535→                  </span>
+   536→   536→                </div>
+   537→   537→                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+   538→   538→                  <div>
+   539→   539→                    <div
+   540→   540→                      className="text-xl font-bold"
+   541→   541→                      style={{ fontFamily: displayFont }}
+   542→   542→                    >
+   543→   543→                      {form.servings}
+   544→   544→                    </div>
+   545→   545→                    <div className="text-[10px] text-white/80">Meals saved</div>
+   546→   546→                  </div>
+   547→   547→                  <div>
+   548→   548→                    <div
+   549→   549→                      className="text-xl font-bold"
+   550→   550→                      style={{ fontFamily: displayFont }}
+   551→   551→                    >
+   552→   552→                      {(form.servings * 0.4).toFixed(1)}kg
+   553→   553→                    </div>
+   554→   554→                    <div className="text-[10px] text-white/80">CO2 saved</div>
+   555→   555→                  </div>
+   556→   556→                  <div>
+   557→   557→                    <div
+   558→   558→                      className="text-xl font-bold"
+   559→   559→                      style={{ fontFamily: displayFont }}
+   560→   560→                    >
+   561→   561→                      +{form.servings * 3}
+   562→   562→                    </div>
+   563→   563→                    <div className="text-[10px] text-white/80">Points</div>
+   564→   564→                  </div>
+   565→   565→                </div>
+   566→   566→              </div>
+   567→   567→            </motion.div>
+   568→   568→          )}
+   569→   569→        </AnimatePresence>
+   570→   570→      </main>
+   571→   571→
+   572→   572→      {/* CTA */}
+   573→   573→      <div className="bg-white px-5 py-3" style={{ boxShadow: "0 -4px 20px rgba(17, 24, 39, 0.06)" }}>
+   574→   574→        <motion.button
+   575→   575→          whileTap={{ scale: 0.97 }}
+   576→   576→          disabled={!canProceed}
+   577→   577→          onClick={() => {
+   578→   578→            if (step === 3) handleConfirm();
+   579→   579→            else setStep(step + 1);
+   580→   580→          }}
+   581→   581→          className="flex h-12 w-full items-center justify-center gap-2 text-[14px] font-semibold text-white disabled:opacity-50"
+   582→   582→          style={{
+   583→   583→            borderRadius: 22,
+   584→   584→            background: "linear-gradient(135deg, #16a34a, #15803d)",
+   585→   585→            boxShadow: "0 4px 16px rgba(22, 163, 74, 0.25)",
+   586→   586→          }}
+   587→   587→        >
+   588→   588→          {step === 3 ? (
+   589→   589→            <>
+   590→   590→              <PartyPopper size={18} />
+   591→   591→              Confirm Donation
+   592→   592→            </>
+   593→   593→          ) : (
+   594→   594→            <>
+   595→   595→              Continue
+   596→   596→              <ChevronRight size={16} strokeWidth={2.5} />
+   597→   597→            </>
+   598→   598→          )}
+   599→   599→        </motion.button>
+   600→   600→      </div>
+   601→   601→
+   602→   602→      {/* Success overlay */}
+   603→   603→      <AnimatePresence>
+   604→   604→        {confirmed && (
+   605→   605→          <motion.div
+   606→   606→            initial={{ opacity: 0 }}
+   607→   607→            animate={{ opacity: 1 }}
+   608→   608→            exit={{ opacity: 0 }}
+   609→   609→            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white px-8"
+   610→   610→          >
+   611→   611→            <motion.div
+   612→   612→              initial={{ scale: 0, rotate: -30 }}
+   613→   613→              animate={{ scale: 1, rotate: 0 }}
+   614→   614→              transition={{ type: "spring", stiffness: 200, damping: 14 }}
+   615→   615→              className="flex h-24 w-24 items-center justify-center rounded-full"
+   616→   616→              style={{
+   617→   617→                background: "linear-gradient(135deg, #16a34a, #15803d)",
+   618→   618→                boxShadow: "0 16px 40px rgba(22, 163, 74, 0.35)",
+   619→   619→              }}
+   620→   620→            >
+   621→   621→              <Check size={48} strokeWidth={3} className="text-white" />
+   622→   622→            </motion.div>
+   623→   623→            <motion.h2
+   624→   624→              initial={{ y: 20, opacity: 0 }}
+   625→   625→              animate={{ y: 0, opacity: 1 }}
+   626→   626→              transition={{ delay: 0.3 }}
+   627→   627→              className="mt-6 text-xl font-bold text-[#111827]"
+   628→   628→              style={{ fontFamily: displayFont }}
+   629→   629→            >
+   630→   630→              Donation listed!
+   631→   631→            </motion.h2>
+   632→   632→            <motion.p
+   633→   633→              initial={{ y: 20, opacity: 0 }}
+   634→   634→              animate={{ y: 0, opacity: 1 }}
+   635→   635→              transition={{ delay: 0.4 }}
+   636→   636→              className="mt-2 text-center text-[13px] text-[#64748b]"
+   637→   637→            >
+   638→   638→              NGOs within 5km have been notified. You'll get a notification when someone accepts.
+   639→   639→            </motion.p>
+   640→   640→          </motion.div>
+   641→   641→        )}
+   642→   642→      </AnimatePresence>
+   643→   643→    </div>
+   644→   644→  );
+   645→   645→}
+   646→   646→
+   647→   647→function SummaryRow({
+   648→   648→  icon,
+   649→   649→  label,
+   650→   650→  value,
+   651→   651→}: {
+   652→   652→  icon: React.ReactNode;
+   653→   653→  label: string;
+   654→   654→  value: string;
+   655→   655→}) {
+   656→   656→  return (
+   657→   657→    <div className="flex items-start gap-3 p-4">
+   658→   658→      <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-md bg-[#f0fdf4] text-[#16A34A]">
+   659→   659→        {icon}
+   660→   660→      </div>
+   661→   661→      <div className="flex-1">
+   662→   662→        <div className="text-[11px] font-medium uppercase tracking-wide text-[#94a3b8]">
+   663→   663→          {label}
+   664→   664→        </div>
+   665→   665→        <div
+   666→   666→          className="mt-0.5 text-[13px] font-semibold text-[#111827]"
+   667→   667→          style={{ fontFamily: displayFont }}
+   668→   668→        >
+   669→   669→          {value}
+   670→   670→        </div>
+   671→   671→      </div>
+   672→   672→    </div>
+   673→   673→  );
+   674→   674→}
+   675→   675→

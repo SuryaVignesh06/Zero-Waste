@@ -4,14 +4,33 @@ import { AppShell } from "@/components/zero-waste/AppShell";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen w-full items-center justify-center sm:p-4 md:p-6" style={{ background: "#fcfcf9" }}>
-      {/* Phone frame on desktop, full-screen on mobile — uses h-[100dvh] for proper mobile scroll */}
+    <div
+      style={{
+        background: "#f5f1ed",
+        height: "100dvh",
+        width: "100vw",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+      }}
+    >
+      {/* Phone frame — uses 100dvh on mobile, fixed size on desktop */}
       <div
-        className="relative flex h-[100dvh] w-full max-w-md flex-col overflow-hidden bg-[#FCFCF9] sm:h-[860px] sm:max-h-[92vh] sm:rounded-[44px] sm:shadow-2xl"
-        style={{ boxShadow: "0 20px 60px rgba(17, 24, 39, 0.12)" }}
+        style={{
+          position: "relative",
+          height: "100dvh",
+          width: "100%",
+          maxWidth: "440px",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          background: "#f5f1ed",
+        }}
+        className="sm:rounded-[44px] sm:shadow-2xl sm:border sm:border-black/5 sm:h-[860px] sm:max-h-[94vh]"
       >
         <AppShell />
       </div>
-    </main>
+    </div>
   );
 }
