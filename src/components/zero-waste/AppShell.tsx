@@ -33,6 +33,8 @@ import { BottomNav } from "./BottomNav";
 import { AiAssistant } from "./AiAssistant";
 import { RecipientHome } from "./RecipientHome";
 import { FoodRequest } from "./FoodRequest";
+import { RecipientAuthChoice } from "./RecipientAuthChoice";
+import { RecipientLogin } from "./RecipientLogin";
 
 const Dummy = ({ title }: { title: string }) => (
   <div className="flex flex-1 items-center justify-center bg-[#F7F5F0]">
@@ -88,6 +90,12 @@ export function AppShell() {
   }
   if (screen === "recipient-setup") {
     return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><RecipientSetup /></div>;
+  }
+  if (screen === "recipient-auth-choice") {
+    return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><RecipientAuthChoice /></div>;
+  }
+  if (screen === "recipient-login") {
+    return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><RecipientLogin /></div>;
   }
 
   const renderScreen = () => {

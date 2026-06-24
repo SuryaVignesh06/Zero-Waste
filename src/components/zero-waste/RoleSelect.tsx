@@ -54,9 +54,11 @@ export function RoleSelect() {
     setRole(selectedRole);
     // Navigate to the specific setup flow based on role
     if (selectedRole === "ngo") {
-      setScreen("ngo-setup" as any);
+      setScreen("ngo-auth-choice" as any);
     } else if (selectedRole === "volunteer") {
       setScreen("volunteer-auth-choice" as any);
+    } else if (selectedRole === "recipient") {
+      setScreen("recipient-auth-choice" as any);
     } else {
       setScreen(`${selectedRole}-setup` as any);
     }

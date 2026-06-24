@@ -2,9 +2,9 @@
 
 import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { Building2, LogIn, ChevronLeft } from "lucide-react";
+import { HeartHandshake, LogIn, ChevronLeft } from "lucide-react";
 
-export function NgoAuthChoice() {
+export function RecipientAuthChoice() {
   const setScreen = useAppStore((s) => s.setScreen);
 
   return (
@@ -26,7 +26,7 @@ export function NgoAuthChoice() {
           className="text-[30px] font-bold text-[#0A0A0A]"
           style={{ fontFamily: "var(--font-outfit)" }}
         >
-          NGO Access
+          Recipient Access
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -35,7 +35,7 @@ export function NgoAuthChoice() {
           className="mt-2 text-[15px] text-[#4A4A4A]"
           style={{ fontFamily: "var(--font-jakarta)" }}
         >
-          Are you an existing member or registering a new organization?
+          Are you already registered with us or are you new here?
         </motion.p>
 
         <div className="mt-12 flex flex-col gap-5">
@@ -44,15 +44,15 @@ export function NgoAuthChoice() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             whileTap={{ scale: 0.96 }}
-            onClick={() => setScreen("ngo-login" as any)}
+            onClick={() => setScreen("recipient-login" as any)}
             className="flex items-center gap-4 rounded-[24px] border border-[#E8E8E4] bg-white p-6 shadow-sm"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1E3A8A]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#86198F]">
               <LogIn size={20} className="text-white" />
             </div>
             <div className="flex-1 text-left">
               <h3 className="text-[18px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>Login</h3>
-              <p className="text-[13px] text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>I already have an account</p>
+              <p className="text-[13px] text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>I already have a profile</p>
             </div>
           </motion.button>
 
@@ -61,15 +61,15 @@ export function NgoAuthChoice() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             whileTap={{ scale: 0.96 }}
-            onClick={() => setScreen("ngo-setup")}
+            onClick={() => setScreen("recipient-setup")}
             className="flex items-center gap-4 rounded-[24px] border border-[#E8E8E4] bg-white p-6 shadow-sm"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E9D5FF]">
-              <Building2 size={20} className="text-[#6B21A8]" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F5D0FE]">
+              <HeartHandshake size={20} className="text-[#86198F]" />
             </div>
             <div className="flex-1 text-left">
               <h3 className="text-[18px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>Register New</h3>
-              <p className="text-[13px] text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>Set up a new organization</p>
+              <p className="text-[13px] text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>Set up a new profile</p>
             </div>
           </motion.button>
         </div>
