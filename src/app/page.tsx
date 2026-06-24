@@ -16,20 +16,10 @@ export default function Home() {
       }}
     >
       <div
-        style={{
-          position: "relative",
-          height: "100dvh",
-          width: "100%",
-          maxWidth: "390px",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          background: "#F7F5F0",
-        }}
-        className="sm:rounded-[44px] sm:shadow-2xl sm:border sm:border-black/5 sm:h-[844px] sm:max-h-[94vh]"
+        className="relative w-full h-[100dvh] flex flex-col overflow-hidden bg-[#F7F5F0] sm:max-w-[390px] sm:rounded-[44px] sm:shadow-2xl sm:border sm:border-black/5 sm:h-[844px] sm:max-h-[94vh]"
       >
-        {/* Status bar simulation */}
-        <div className="flex items-center justify-between px-6 pt-3 pb-1" style={{ height: "44px", flexShrink: 0 }}>
+        {/* Status bar simulation (Desktop only) */}
+        <div className="hidden sm:flex items-center justify-between px-6 pt-3 pb-1" style={{ height: "44px", flexShrink: 0 }}>
           <span style={{ fontFamily: "var(--font-outfit)", fontSize: "15px", fontWeight: 600, color: "#0A0A0A" }}>
             9:41
           </span>
