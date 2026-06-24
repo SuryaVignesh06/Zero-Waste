@@ -17,12 +17,21 @@ const ROLES = [
   },
   {
     id: "ngo" as const,
-    title: "NGO / Recipient",
-    desc: "Receive donations, track distributions, manage volunteers.",
+    title: "NGO",
+    desc: "Receive bulk donations, track distributions, manage volunteers.",
     bg: "#C8D8F0",
     iconBg: "#1E3A8A",
     accent: "#1E3A8A",
     icon: Building2,
+  },
+  {
+    id: "recipient" as const,
+    title: "Recipient",
+    desc: "Request food and buy affordable groceries directly.",
+    bg: "#F5D0FE",
+    iconBg: "#86198F",
+    accent: "#86198F",
+    icon: HeartHandshake,
   },
   {
     id: "volunteer" as const,
@@ -38,14 +47,14 @@ const ROLES = [
 export function RoleSelect() {
   const setRole = useAppStore((s) => s.setRole);
   const setScreen = useAppStore((s) => s.setScreen);
-  const [selectedRole, setSelectedRole] = useState<"user" | "ngo" | "volunteer" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<"user" | "ngo" | "volunteer" | "recipient" | null>(null);
 
   const handleContinue = () => {
     if (!selectedRole) return;
     setRole(selectedRole);
     // Navigate to the specific setup flow based on role
     if (selectedRole === "ngo") {
-      setScreen("ngo-recipient-choice" as any);
+      setScreen("ngo-setup" as any);
     } else if (selectedRole === "volunteer") {
       setScreen("volunteer-auth-choice" as any);
     } else {

@@ -276,8 +276,9 @@ export function NgoFeed() {
               const Icon = DONOR_ICONS[d.donorType] ?? Building2;
               
               // Colors based on event type
-              const bgColor = d.donorType === "event" || d.donorType === "marriage-hall" ? "#F5E6C8" : "#C8E8D0";
-              const iconColor = d.donorType === "event" || d.donorType === "marriage-hall" ? "#D97706" : "#1A6B3C";
+              const isBulk = d.servings >= 50;
+              const bgColor = isBulk ? "#F5D0FE" : (d.donorType === "event" || d.donorType === "marriage-hall" ? "#F5E6C8" : "#C8E8D0");
+              const iconColor = isBulk ? "#86198F" : (d.donorType === "event" || d.donorType === "marriage-hall" ? "#D97706" : "#1A6B3C");
 
               return (
                 <motion.div
@@ -298,8 +299,11 @@ export function NgoFeed() {
 
                     {/* Content */}
                     <div className="flex flex-col justify-center flex-1">
-                      <div className="text-[15px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+                      <div className="text-[15px] font-bold text-[#0A0A0A] flex items-center gap-2" style={{ fontFamily: "var(--font-outfit)" }}>
                         {d.servings} Servings · {d.title.split(" ")[0]}
+                        {isBulk && (
+                          <span className="rounded-full bg-[#86198F] px-1.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">Bulk</span>
+                        )}
                       </div>
                       <div className="mt-1 text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
                         {d.donorName}

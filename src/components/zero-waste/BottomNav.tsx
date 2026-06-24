@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
 import type { Role } from "@/lib/types";
-import { Home, MapPin, ShoppingBag, User, Inbox, Sparkles, HeartHandshake, Bike, Store, Users, Clock, Camera } from "lucide-react";
+import { Home, MapPin, ShoppingBag, User, Inbox, Sparkles, HeartHandshake, Bike, Store, Users, Clock, Camera, HandHeart } from "lucide-react";
 
 interface TabDef {
   id: string;
@@ -36,6 +36,12 @@ const TABS_BY_ROLE: Record<Role, TabDef[]> = {
     { id: "history", icon: Clock, screen: "volunteerHistory", label: "History" },
     { id: "profile", icon: User, screen: "volunteerProfile", label: "Profile" },
   ],
+  recipient: [
+    { id: "home", icon: Home, screen: "recipientHome", label: "Home" },
+    { id: "shop", icon: Store, screen: "marketplace", label: "Shop" },
+    { id: "request", icon: HandHeart, screen: "foodRequest", label: "Request" },
+    { id: "profile", icon: User, screen: "recipientProfile", label: "Profile" },
+  ],
 };
 
 const homeScreensByRole: Record<Role, string[]> = {
@@ -43,6 +49,7 @@ const homeScreensByRole: Record<Role, string[]> = {
   ngo: ["ngoFeed", "ngoMap"],
   shop: ["shop-dashboard"],
   volunteer: ["volunteerHome"],
+  recipient: ["recipientHome", "marketplace", "foodRequest"],
 };
 
 export function BottomNav() {
@@ -111,14 +118,14 @@ export function BottomNav() {
           className="flex items-center justify-between rounded-[28px] p-2"
           style={{
             width: "100%",
-            maxWidth: "350px",
-            height: "64px",
+            maxWidth: "360px",
+            height: "70px",
             pointerEvents: "auto",
-            background: "rgba(255, 255, 255, 0.88)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255, 255, 255, 0.60)",
-            boxShadow: "0px -8px 32px rgba(0,0,0,0.08)",
+            background: "rgba(255, 255, 255, 0.45)",
+            backdropFilter: "blur(40px) saturate(200%)",
+            WebkitBackdropFilter: "blur(40px) saturate(200%)",
+            border: "1px solid rgba(255, 255, 255, 0.8)",
+            boxShadow: "0px 8px 32px rgba(0, 0, 0, 0.12), inset 0px 1px 2px rgba(255, 255, 255, 0.8)",
           }}
         >
           {tabs.map((tab) => {

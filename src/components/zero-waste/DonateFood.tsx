@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore, DonationForm } from "@/lib/store";
 import {
   ArrowLeft, Camera, Image as ImageIcon, Minus, Plus, Flame, Package, Clock, Navigation, 
-  MapPin, CheckCircle, Leaf, Star, ChevronRight, AlertTriangle
+  MapPin, CheckCircle, Leaf, Star, ChevronRight, AlertTriangle, X
 } from "lucide-react";
 
 export function DonateFood() {
@@ -113,6 +113,7 @@ export function DonateFood() {
 
 function Step1({ form, setForm }: { form: DonationForm, setForm: any }) {
   const CATEGORIES = ["Cooked Meal", "Vegetables", "Bakery", "Dairy", "Packaged", "Mixed", "Other"];
+  const [showCamera, setShowCamera] = useState(false);
   
   return (
     <motion.div
@@ -126,28 +127,46 @@ function Step1({ form, setForm }: { form: DonationForm, setForm: any }) {
       <p className="mt-1.5 text-[14px] text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>Be accurate so NGOs can plan effectively.</p>
 
       {/* Photo Upload Zone */}
-      <label className="mt-6 flex h-[200px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[24px] border-2 border-dashed border-[#D0D0CC] bg-white shadow-[0px_2px_16px_rgba(0,0,0,0.06)] overflow-hidden relative">
-        <input 
-          type="file" 
-          accept="image/*" 
-          capture="environment" 
-          className="hidden" 
-          onChange={(e) => {
-            if (e.target.files && e.target.files[0]) {
-              setForm({ photos: [URL.createObjectURL(e.target.files[0])] });
-            }
-          }}
-        />
-        {form.photos && form.photos.length > 0 ? (
-          <img src={form.photos[0]} alt="Food" className="absolute inset-0 h-full w-full object-cover" />
-        ) : (
-          <>
-            <Camera size={36} className="text-[#8A8A8A]" />
-            <div className="text-[16px] font-semibold text-[#4A4A4A]" style={{ fontFamily: "var(--font-outfit)" }}>Add food photos</div>
-            <div className="text-[13px] font-normal text-[#8A8A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>Tap to take photo or upload from gallery</div>
-          </>
-        )}
-      </label>
+      {showCamera ? (
+        <div className="mt-6 h-[240px] w-full overflow-hidden rounded-[24px] shadow-[0px_2px_16px_rgba(0,0,0,0.06)] relative bg-black">
+          <LiveCamera 
+            onCapture={(url) => {
+              setForm({ photos: [url] });
+              setShowCamera(false);
+            }} 
+            onCancel={() => setShowCamera(false)} 
+          />
+        </div>
+      ) : (
+        <label className="mt-6 flex h-[200px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[24px] border-2 border-dashed border-[#D0D0CC] bg-white shadow-[0px_2px_16px_rgba(0,0,0,0.06)] overflow-hidden relative" onClick={(e) => {
+          if (!form.photos || form.photos.length === 0) {
+            e.preventDefault();
+            setShowCamera(true);
+          }
+        }}>
+          {form.photos && form.photos.length > 0 ? (
+            <>
+              <img src={form.photos[0]} alt="Food" className="absolute inset-0 h-full w-full object-cover" />
+              <button 
+                className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setForm({ photos: [] });
+                }}
+              >
+                <X size={16} />
+              </button>
+            </>
+          ) : (
+            <>
+              <Camera size={36} className="text-[#8A8A8A]" />
+              <div className="text-[16px] font-semibold text-[#4A4A4A]" style={{ fontFamily: "var(--font-outfit)" }}>Open Live Camera</div>
+              <div className="text-[13px] font-normal text-[#8A8A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>Tap to snap a picture of the food</div>
+            </>
+          )}
+        </label>
+      )}
 
       {/* Food Name */}
       <div className="mt-6">
@@ -450,6 +469,102 @@ function SuccessScreen() {
           </button>
         </div>
       </motion.div>
+    </div>
+  );
+}
+
+function LiveCamera({ onCapture, onCancel }: { onCapture: (url: string) => void, onCancel?: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    async function setupCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false,
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        setHasPermission(true);
+      } catch (err) {
+        console.error("Camera error:", err);
+        setHasPermission(false);
+      }
+    }
+    setupCamera();
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const capture = useCallback(() => {
+    if (videoRef.current) {
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+        onCapture(dataUrl);
+      }
+    }
+  }, [onCapture]);
+
+  if (hasPermission === false) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center bg-[#E8E8E4] p-4 text-center">
+        <AlertTriangle size={24} className="text-[#D97706] mb-2" />
+        <p className="text-[13px] font-medium text-[#4A4A4A]">Camera access denied. Please ensure you are on localhost/HTTPS or manually upload.</p>
+        {onCancel && (
+          <button onClick={onCancel} className="mt-4 rounded-full bg-white px-4 py-2 text-[13px] font-bold text-[#0A0A0A]">
+            Close
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-black">
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      
+      {/* Capture Button Overlay */}
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            capture();
+          }}
+          className="flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-white/20 backdrop-blur-sm active:scale-95 transition-transform"
+        >
+          <div className="h-10 w-10 rounded-full bg-white" />
+        </button>
+      </div>
+
+      {onCancel && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onCancel();
+          }}
+          className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md"
+        >
+          <X size={16} />
+        </button>
+      )}
     </div>
   );
 }

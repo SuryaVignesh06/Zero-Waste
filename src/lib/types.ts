@@ -1,4 +1,4 @@
-export type Role = "user" | "shop" | "ngo" | "volunteer";
+export type Role = "user" | "shop" | "ngo" | "volunteer" | "recipient";
 
 export type Screen =
   | "onboarding"

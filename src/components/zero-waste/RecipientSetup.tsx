@@ -20,11 +20,11 @@ export function RecipientSetup() {
 
   // Step 2
   const [dietary, setDietary] = useState("");
-  const [supportType, setSupportType] = useState("");
+  const [supportType, setSupportType] = useState<string[]>([]);
   const [notifications, setNotifications] = useState(true);
 
   const isStep1Valid = name && neighborhood;
-  const isStep2Valid = supportType !== "";
+  const isStep2Valid = supportType.length > 0;
 
   const handleNext = () => {
     if (step === 1 && isStep1Valid) setStep(2);
@@ -161,20 +161,29 @@ export function RecipientSetup() {
                         { id: "ration", icon: Package, label: "Dry Ration Kits" },
                         { id: "weekend", icon: Calendar, label: "Weekend Support" },
                         { id: "special", icon: Star, label: "Special Needs" },
-                      ].map((item) => (
-                        <button
-                          key={item.id}
-                          onClick={() => setSupportType(item.id)}
-                          className={`flex flex-col items-center gap-2 rounded-[16px] border p-4 transition-all ${
-                            supportType === item.id
-                              ? "border-[#6B21A8] bg-[#FAF5FF] text-[#6B21A8]"
-                              : "border-[#E8E8E4] bg-white text-[#4A4A4A]"
-                          }`}
-                        >
-                          <item.icon size={24} />
-                          <span className="text-[14px] font-bold" style={{ fontFamily: "var(--font-jakarta)" }}>{item.label}</span>
-                        </button>
-                      ))}
+                      ].map((item) => {
+                        const isSelected = supportType.includes(item.id);
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              if (isSelected) {
+                                setSupportType(supportType.filter(i => i !== item.id));
+                              } else {
+                                setSupportType([...supportType, item.id]);
+                              }
+                            }}
+                            className={`flex flex-col items-center gap-2 rounded-[16px] border p-4 transition-all ${
+                              isSelected
+                                ? "border-[#6B21A8] bg-[#FAF5FF] text-[#6B21A8]"
+                                : "border-[#E8E8E4] bg-white text-[#4A4A4A]"
+                            }`}
+                          >
+                            <item.icon size={24} />
+                            <span className="text-[14px] font-bold" style={{ fontFamily: "var(--font-jakarta)" }}>{item.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

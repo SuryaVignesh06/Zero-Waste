@@ -31,6 +31,8 @@ import { ImpactDashboard } from "./ImpactDashboard";
 import { Profile } from "./Profile";
 import { BottomNav } from "./BottomNav";
 import { AiAssistant } from "./AiAssistant";
+import { RecipientHome } from "./RecipientHome";
+import { FoodRequest } from "./FoodRequest";
 
 const Dummy = ({ title }: { title: string }) => (
   <div className="flex flex-1 items-center justify-center bg-[#F7F5F0]">
@@ -123,11 +125,11 @@ export function AppShell() {
       case "volunteerPickup": return <Dummy title="Volunteer Pickup" />;
       case "volunteerHistory": return <Dummy title="Volunteer History" />;
       case "volunteerProfile": return <VolunteerProfile />;
-      case "recipientHome": return <Dummy title="Recipient Home" />;
+      case "recipientHome": return <RecipientHome />;
       case "recipientMap": return <Dummy title="Recipient Map" />;
-      case "foodRequest": return <Dummy title="Food Request" />;
+      case "foodRequest": return <FoodRequest />;
       case "requestStatus": return <Dummy title="Request Status" />;
-      case "recipientProfile": return <Dummy title="Recipient Profile" />;
+      case "recipientProfile": return <Profile />;
 
       default: return <HomeUser />;
     }
