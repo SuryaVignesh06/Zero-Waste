@@ -1,78 +1,111 @@
-# ZERO-WASTE APP: COMPLETE FEATURE BREAKDOWN
+# ZERO-WASTE V2 — CIRCULAR ECONOMY PLATFORM FEATURES
+A comprehensive breakdown of all panels, screens, and features in the Zero-Waste platform.
 
-## 1. Core Architecture & UI/UX
-* **Role-Based Dynamic Routing**: A unified `AppShell` that dynamically serves completely different UI flows based on three core roles: `user` (Consumer/Donor), `ngo` (Organization), and `volunteer` (Rider).
-* **State Management**: Centralized `zustand` store (`useAppStore`) managing global state (cart, products, donations, active screen, search queries, active roles, and filter preferences).
-* **Premium Physics-Based Animations**: Deep integration of `framer-motion` for fluid, native-feeling interactions including spring-based slide-ups, continuous pulsing indicators, 3D parallax effects, and smooth screen transitions.
-* **Modern Aesthetic**: A strict custom "Pastel UI" design system (`var(--color-pastel-clay)`, `var(--color-pastel-green)`, etc.) featuring glassmorphism (translucent frosted panels), heavy border-radii (pill shapes), soft shadows, and typography using Google Fonts (Outfit & Plus Jakarta Sans).
-* **Smart Navigation**: Conditional `BottomNav` that intelligently hides itself on deeply focused screens (e.g., Checkout, Tracking, Donation flow) to maximize viewport space.
+---
 
-## 2. Onboarding & Authentication
-* **Physics-Animated Carousel**: A 3-slide onboarding experience with continuous spring animations. Features floating UI widgets (bouncing MapPins with badges, discounted price tags, rotating 3D logistics rings) overlaid on smoothly transitioning blurred pastel orbs.
-* **Premium Glassmorphic Login**: An elevated white glass bottom sheet with custom input states (green border transition on valid mobile input), soft shadows, and a branded geometric logo. 
+## 1. DONOR PANEL (General Users & Businesses)
+The primary entry point for users wanting to save food, donate excess, and track their impact.
 
-## 3. Consumer / Donor Panel (Role: `user`)
-* **Home Screen**: 
-  * Welcome header with personalized greeting, location indicator, and a live pulsing "rescues near you" count.
-  * **Personal Impact Card**: A gradient hero card summarizing total meals rescued, CO2 prevented, and money saved.
-  * **2x2 Impact Grid**: Four cards displaying metrics, with a distinct "Donate Food" camera trigger card.
-  * **Nearby Rescues**: Horizontal scrollable gallery of local urgent food requests.
-  * **Happening Now**: A vertical community feed showing live system events (e.g., "Raj Marriage Hall donated 80 servings").
-  * **Deals Near You**: Horizontal scrollable list of discounted marketplace groceries.
-* **Donate Food (3-Step Wizard)**:
-  * **Step 1 (Food Details)**: Photo upload zone, food name, category chips, sleek serving size stepper, and condition tags (Freshly Cooked, Good Condition, Needs Quick Pickup). *Explicitly free of AI-vision overlays to maintain a government-app feel.*
-  * **Step 2 (Pickup Details)**: Availability time pickers, address text area with a "Use current location" auto-fill, special instructions, and donor type selectors.
-  * **Step 3 (Review)**: Summary list, auto-notify nearby NGOs toggle, selective NGO list with ratings/distances, and an Impact Preview calculator.
-  * **Success Screen**: Features an animated bouncy CheckCircle and calculates earned impact points.
-* **Donation Tracking (Timeline)**:
-  * A 4-stage vertical timeline (Listed, Accepted, Picked Up, Delivered) tracking the food handover.
-  * Live status indicators with pulsing nodes.
-  * Upon delivery completion, reveals an animated "Donation Impact" summary card.
-* **Marketplace / Search**: 
-  * Sticky glassmorphic search header and interactive category tabs.
-  * Slide-up **Filter Bottom Sheet** allowing users to adjust a maximum price slider dynamically.
-  * Scrollable grid of discounted products.
-* **Product Details & Checkout Flow**: 
-  * Massive hero image of the product, Expiry countdown timer, and Sustainability Impact Metrics.
-  * Checkout features delivery preferences (Instant vs Scheduled), Zero-Waste Discounts, and a smooth simulated payment confirmation.
-* **Live Order Tracking**: 
-  * Full-screen vector map backdrop with an animated route dashed-line, milestone tracking, and a delivery rider profile card.
-* **Profile Enhancements**:
-  * Integrated **My Donations** section displaying a history of listed donations with color-coded status pills (Delivered, In Progress, Available).
+**Home Dashboard (HomeUser.tsx)**
+- **Impact Hero Card:** Displays "Meals Rescued", "CO2 Saved", and "Money Saved" using a premium gradient design.
+- **Quick Actions:**
+  - Save Food (Navigates to Local Savings Market)
+  - Donate Bulk (Navigates to Donate Food flow)
+  - Ask Food (Navigates to Recipient Food Request)
+  - Volunteer (Navigates to Volunteer Rescue Map)
+- **Verified Impact Stories:** Horizontal scrolling carousel of `DonorImpactStoryView` proofs uploaded by NGOs.
 
-## 4. NGO Panel (Role: `ngo`)
-* **Live Radar Feed**: 
-  * **AirDrop-Style Radar**: A rotating radar sweep over a 2D grid, dynamically plotting nearby food donations as dots based on coordinates. Tooltips appear over radar dots on tap.
-  * **NGO Header Status**: Features a non-overlapping "LIVE" pulsing badge and a correctly mapped Settings button that routes the NGO to the universal, role-adapted Profile screen.
-* **Donation Feed & Filters**: 
-  * Horizontal scrollable pill list of active donors and vertical feed of urgent donation cards.
-  * Advanced filter bottom sheet (filter by Food Type, Distance slider, and Urgency level).
-* **Delivery Tracking (Swiggy/Blinkit Style)**: 
-  * Triggered immediately upon clicking "Accept" on a donation.
-  * Features a full-screen custom vector map background.
-  * A dashed route path is drawn from the Donor to the NGO.
-  * A **moving vehicle (Bike) icon** actively animates along the path in real-time.
-  * A dynamic tooltip attached to the moving bike displays a decreasing "Minutes away" ETA.
-  * A bottom sheet displays the volunteer's profile (name, rating, vehicle details), instant "Message" and "Call" buttons, and a 4-digit Delivery PIN box for verification.
+**Donation Flow (DonateFood.tsx)**
+- **Step 1: Food Details:** Specify type (Cooked, Raw, Packaged, etc.) and use the **Device Camera (LiveCamera)** to capture photos of the food.
+- **Step 2: Pickup Info:** Enter manual location/address, specify quantity and expiry time.
+- **Step 3: Confirmation:** Review details and submit. Triggers notification to NGOs and Volunteers.
 
-## 5. Volunteer Hub (Role: `volunteer`)
-* **Full-Screen Rescue Map**: 
-  * A custom-styled immersive vector map featuring pastel-colored parks, water bodies, and intersecting roads.
-* **Floating Glass UI & Coverage Radius**: 
-  * Header, online/offline toggle, real-time stats float as translucent glass pills.
-  * A massive, smoothly expanding and fading circle locked around the user's central pin indicating the 5km zone.
-* **Interactive Donation Pins**: 
-  * Individual map pins for available pickups. Urgent pickups pulse rapidly with a red aura.
-* **Pickup Details (Bottom Sheet)**: 
-  * Sleek spring-animated slide-up sheet showing AI logistics match score, total Meals, Points rewarded, and Earnings.
-  * "Accept Pickup" and "Navigate" quick actions.
-* **Volunteer Flow Logic**:
-  * Donor creates a donation.
-  * NGO accepts the donation.
-  * The app broadcasts the pickup to Volunteers.
-  * If a Volunteer accepts, they complete the delivery.
-  * If no Volunteer accepts, the NGO handles the pickup themselves.
+**Donation Tracking (DonationTracking.tsx)**
+- Live tracking of the donation lifecycle (Listed -> Assigned -> Picked Up -> Arrived -> Verified).
+- Live volunteer vehicle map simulation tracking the pickup process.
 
-## 6. Shared Components & Mechanics
-* **Live Countdowns**: `Countdown` component automatically formatting remaining time to expiry (HH:MM:SS), turning red when time is critically low.
-* **Mock Database (`types.ts` & `store.ts`)**: Rich simulated backend populated with mock products, mock donations, orders, impact events, and a robust cart state manager.
+---
+
+## 2. SHOPKEEPER PANEL (Local Savings Market)
+Designed for local bakeries, supermarkets, and restaurants to list near-expiry food at heavy discounts to avoid waste.
+
+**Shopkeeper Setup (ShopkeeperSetup.tsx)**
+- 3-Step Wizard: Basic Info, Location & Contact, and Verification Document Upload.
+
+**Dashboard (ShopkeeperDashboard.tsx)**
+- **Hero Stats:** Revenue generated, items saved, average discount.
+- **Active Listings:** Manage currently listed products.
+- **Add Product Wizard:** 3-step flow to upload product photo, set original/discounted price, and expiry countdown.
+
+**Consumer View (LocalSavingsMarket.tsx)**
+- Marketplace listing discounted items with urgency badges (e.g., "Expires in 2 hrs").
+- Clean bottom-sheet reservation interface (`ProductDetailReserve.tsx`).
+- Reservation generates a QR code/reservation ID (`ReservationConfirmation.tsx`).
+
+---
+
+## 3. NGO PANEL (Food Distribution & Verification)
+Designed to coordinate large-scale rescues, manage volunteers, and upload proof of impact.
+
+**NGO Login & Setup (NgoLogin.tsx / NgoSetup.tsx)**
+- Login for existing verified NGOs.
+- Verification flow for new NGOs to upload credentials.
+
+**NGO Feed (NgoFeed.tsx)**
+- **Hero Dashboard:** NGO verification badge, total rescues, success rate.
+- **Tab 1: Awaiting Action:** View live food donations nearby. Includes an Active Volunteer Directory with click-to-call functionality.
+- **Tab 2: Active Pickups:** Track volunteers currently picking up food.
+- **Tab 3: Pending Verification:** Food that has arrived at the NGO and needs distribution proof.
+- **Tab 4: Completed Stories:** Gallery of completed rescues and generated impact stories.
+
+**Distribution Verification (NgoDistributionProofUploader.tsx)**
+- **Step 1: Photo Evidence:** Uses **Device Camera** to capture the actual food distribution to beneficiaries.
+- **Step 2: Metrics:** Input the number of people fed.
+- **Step 3: Completion:** Generates an official Impact Story and sends it directly to the Donor's dashboard.
+
+**NGO Delivery Tracking (NgoDeliveryTracking.tsx)**
+- Tracks the volunteer arriving at the NGO location. Transitions into the Proof Uploader when food arrives.
+
+---
+
+## 4. VOLUNTEER PANEL (Logistics & Rescue)
+Designed for delivery agents and community members who transport food from Donors to NGOs.
+
+**Rescue Map (VolunteerMap.tsx)**
+- Live map showing pins for available donations (Donors) and destination hubs (NGOs).
+- Estimated distances and routing.
+- Swiggy-style bottom sheet to accept pickups.
+
+**Volunteer Dashboard (VolunteerHome.tsx)**
+- Tracks volunteer impact: Kilometers driven, rescues completed, ranking among other volunteers.
+- Active task manager.
+
+---
+
+## 5. RECIPIENT PANEL (Community Support)
+Designed for individuals or smaller communities requesting support.
+
+**Recipient Login & Setup (RecipientLogin.tsx / RecipientSetup.tsx)**
+- Allows users to log in or set up a profile as an individual or family.
+
+**Home Dashboard (RecipientHome.tsx)**
+- Clean interface offering specific community support options.
+- Links to Buy Groceries (Marketplace) or Request Food.
+
+**Food Request Form (FoodRequest.tsx)**
+- **Support Type:** Choose between Free Food (from donors) or Subsidized Food (from shops).
+- **Quantity:** Choose Individual (1-5 people) or Bulk (for events/small NGOs).
+- **Multi-Select Food Types:** Select desired items (Cooked Meals, Raw Groceries, Packaged, etc.) with checkboxes.
+- **Urgency Level:** Select High, Medium, or Low urgency.
+- Submit request to trigger notifications to Donors, NGOs, and Shopkeepers.
+
+---
+
+## PLATFORM-WIDE DESIGN SYSTEM
+- **Typography:** Uses Google Fonts (`Outfit` for bold headers, `Plus Jakarta Sans` for clean body text).
+- **Aesthetics:** Apple-inspired premium feel. Liquid glass-morphism used in Bottom Navigation bar and overlays.
+- **Color Palette:**
+  - Primary Green: `#1A6B3C`
+  - Background: Off-white `#F7F5F0`
+  - Accents: Amber `#F59E0B` (for warnings/shopkeepers), Red `#DC2626` (urgency), Blue `#2563EB` (requests).
+- **Animation:** Framer-motion driven page transitions, tap animations, and floating UI elements.

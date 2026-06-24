@@ -3,23 +3,16 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { staggerContainer, cardVariants } from "@/lib/animations";
-import { formatINR } from "./Countdown";
 import {
-  MapPin, Search, Bell, ChevronDown, ArrowUpRight, Camera,
-  ChevronRight, Users, ShoppingBag, Building2, Leaf, Plus, Utensils
+  MapPin, Bell, User, ShoppingBag, Heart, HandHeart, Users, ChevronRight, CheckCircle2
 } from "lucide-react";
 
 export function HomeUser() {
-  const products = useAppStore((s) => s.products);
-  const donations = useAppStore((s) => s.donations);
   const setScreen = useAppStore((s) => s.setScreen);
-  const setActiveProduct = useAppStore((s) => s.setActiveProduct);
-  const addToCart = useAppStore((s) => s.addToCart);
+  const impactStories = useAppStore((s) => s.impactStories);
+  const reservations = useAppStore((s) => s.reservations);
 
   const [mealsRescued, setMealsRescued] = useState(0);
-  const [totalMealsRescued, setTotalMealsRescued] = useState(0);
-  const [availableRescues, setAvailableRescues] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -27,20 +20,16 @@ export function HomeUser() {
     const duration = 800;
     const steps = 60;
     let currentStep = 0;
+    const targetMeals = 24;
 
     const timer = setInterval(() => {
       currentStep++;
-      setMealsRescued(Math.min(248, Math.round((currentStep / steps) * 248)));
-      setTotalMealsRescued(Math.min(248, Math.round((currentStep / steps) * 248)));
-      setAvailableRescues(Math.min(3, Math.round((currentStep / steps) * 3)));
+      setMealsRescued(Math.min(targetMeals, Math.round((currentStep / steps) * targetMeals)));
       if (currentStep >= steps) clearInterval(timer);
     }, duration / steps);
 
     return () => clearInterval(timer);
   }, []);
-
-  const rescueDonations = donations.filter((d) => d.status === "listed").slice(0, 5);
-  const topDeals = products.slice(0, 6);
 
   return (
     <div
@@ -68,21 +57,17 @@ export function HomeUser() {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {/* Marketplace search removed as per request */}
           <button
-            className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white transition-transform active:scale-95"
-            style={{ boxShadow: "0px 2px 16px rgba(0,0,0,0.06)" }}
+            onClick={() => setScreen("userProfile" as any)}
+            className="flex h-10 w-10 overflow-hidden rounded-full border-2 border-[#E8E8E4]"
           >
-            <Bell size={20} className="text-[#0A0A0A]" />
-            <span
-              className="absolute right-3 top-3 h-2 w-2 rounded-full bg-[#DC2626]"
-              style={{ animation: "pulse-ring-anim 1.5s ease-out infinite" }}
-            />
+            <img src="https://i.pravatar.cc/100?img=33" alt="Avatar" className="h-full w-full object-cover" />
           </button>
         </div>
       </div>
 
       <main style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingBottom: "120px" }}>
+        
         {/* Greeting + Location */}
         <div className="px-5 mt-2">
           <div className="flex items-center gap-1.5">
@@ -90,20 +75,13 @@ export function HomeUser() {
             <span className="text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
               Koramangala, Bangalore
             </span>
-            <ChevronDown size={14} className="text-[#8A8A8A] ml-0.5" />
           </div>
           <h1 className="mt-2 text-[26px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
             Good morning, Arjun
           </h1>
-          <div className="mt-1 flex items-center gap-1.5">
-            <div className="h-2 w-2 rounded-full bg-[#22C55E]" style={{ animation: "pulse-ring-anim 2s infinite" }} />
-            <span className="text-[13px] font-normal text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              <span className="font-bold">{availableRescues}</span> food rescues available near you
-            </span>
-          </div>
         </div>
 
-        {/* Personal Impact Summary Card */}
+        {/* Impact Hero Card */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -111,7 +89,7 @@ export function HomeUser() {
           className="mt-5 px-5"
         >
           <div
-            className="relative w-full rounded-[20px] p-5 overflow-hidden"
+            className="relative w-full rounded-[24px] p-6 overflow-hidden"
             style={{
               background: "linear-gradient(135deg, #0A2E1A 0%, #1A6B3C 100%)",
               boxShadow: "0px 8px 24px rgba(26,107,60,0.25)"
@@ -119,227 +97,133 @@ export function HomeUser() {
           >
             <div className="flex items-center justify-between relative z-10">
               <div>
-                <div className="text-[12px] font-semibold tracking-[1px] uppercase text-white/70" style={{ fontFamily: "var(--font-jakarta)" }}>
+                <div className="text-[12px] font-bold tracking-[1px] uppercase text-white/70" style={{ fontFamily: "var(--font-jakarta)" }}>
                   Your Impact
                 </div>
-                <div className="mt-1.5 text-[28px] font-extrabold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
-                  {mealsRescued} Meals Rescued
+                <div className="mt-1.5 text-[32px] font-extrabold text-white leading-none" style={{ fontFamily: "var(--font-outfit)" }}>
+                  {mealsRescued} People
                 </div>
-                <div className="mt-1 text-[12px] font-normal text-white/60" style={{ fontFamily: "var(--font-jakarta)" }}>
-                  This month
+                <div className="mt-1 text-[13px] font-medium text-white/80" style={{ fontFamily: "var(--font-jakarta)" }}>
+                  Fed this month
                 </div>
               </div>
-              <div className="flex flex-col gap-2 text-right">
+              <div className="flex flex-col gap-3 text-right">
                 <div>
-                  <div className="text-[16px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>18.4kg</div>
-                  <div className="text-[10px] font-normal text-white/65" style={{ fontFamily: "var(--font-jakarta)" }}>CO₂ Saved</div>
+                  <div className="text-[18px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>18.4kg</div>
+                  <div className="text-[11px] font-medium text-white/70" style={{ fontFamily: "var(--font-jakarta)" }}>CO₂ Saved</div>
                 </div>
                 <div>
-                  <div className="text-[16px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>₹1,240</div>
-                  <div className="text-[10px] font-normal text-white/65" style={{ fontFamily: "var(--font-jakarta)" }}>Money Saved</div>
-                </div>
-                <div>
-                  <div className="text-[16px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>320pts</div>
-                  <div className="text-[10px] font-normal text-white/65" style={{ fontFamily: "var(--font-jakarta)" }}>Impact Points</div>
+                  <div className="text-[18px] font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>₹1,240</div>
+                  <div className="text-[11px] font-medium text-white/70" style={{ fontFamily: "var(--font-jakarta)" }}>Money Saved</div>
                 </div>
               </div>
             </div>
-            
-            <svg className="absolute -bottom-5 -right-5 w-[120px] h-[120px] text-white opacity-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L2 12L12 22L22 12L12 2Z" />
-            </svg>
+
+            {/* Background design element */}
+            <div className="absolute -bottom-10 -right-10 opacity-10">
+              <svg width="180" height="180" viewBox="0 0 24 24" fill="white">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </div>
           </div>
         </motion.div>
 
-        {/* 2x2 Impact Grid */}
-        <motion.div
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="mt-4 grid grid-cols-2 gap-3 px-5"
-        >
-          {/* Card 1 — Meals Rescued */}
-          <motion.div
-            variants={cardVariants}
-            className="relative overflow-hidden p-5 shadow-sm bg-[#C8D8F0]"
-            style={{ borderRadius: "24px", minHeight: "160px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06)" }}
-          >
-            <div className="flex items-start justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[1px] text-[#1E3A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                My Impact
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70">
-                <ArrowUpRight size={16} className="text-[#1E3A8A]" />
-              </div>
-            </div>
-            <div className="mt-5 text-[36px] font-extrabold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-              {totalMealsRescued}
-            </div>
-            <div className="mt-1 text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              Meals Rescued
-            </div>
-            <div className="mt-2 text-[11px] font-normal text-[#1E3A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              +12 this week
-            </div>
-            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full bg-[#1E3A8A] opacity-10 translate-x-5 translate-y-5" />
-          </motion.div>
+        {/* Quick Actions (Grid of 4) */}
+        <div className="mt-6 px-5">
+          <h2 className="text-[16px] font-bold text-[#0A0A0A] mb-3" style={{ fontFamily: "var(--font-outfit)" }}>
+            How would you like to help?
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <ActionCard 
+              icon={<ShoppingBag size={24} color="#D97706" />}
+              title="Save Food"
+              subtitle="Buy discounted"
+              bg="#FEF3C7"
+              onClick={() => setScreen("localSavingsMarket")}
+            />
+            <ActionCard 
+              icon={<Heart size={24} color="#1A6B3C" />}
+              title="Donate Bulk"
+              subtitle="Give excess food"
+              bg="#F0F7F2"
+              onClick={() => setScreen("donate")}
+            />
+            <ActionCard 
+              icon={<HandHeart size={24} color="#2563EB" />}
+              title="Ask Food"
+              subtitle="Request a meal"
+              bg="#DBEAFE"
+              onClick={() => setScreen("foodRequest")}
+            />
+            <ActionCard 
+              icon={<Users size={24} color="#7C3AED" />}
+              title="Volunteer"
+              subtitle="Rescue food"
+              bg="#F3E8FF"
+              onClick={() => setScreen("volunteerMap" as any)}
+            />
+          </div>
+        </div>
 
-          {/* Card 2 — CO2 Prevented */}
-          <motion.div
-            variants={cardVariants}
-            className="relative overflow-hidden p-5 shadow-sm bg-[#F5E6C8]"
-            style={{ borderRadius: "24px", minHeight: "160px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06)" }}
-          >
-            <div className="flex items-start justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[1px] text-[#D97706]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                CO₂ Reduced
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70">
-                <ArrowUpRight size={16} className="text-[#D97706]" />
-              </div>
-            </div>
-            <div className="mt-5 text-[36px] font-extrabold text-[#0A0A0A] leading-tight" style={{ fontFamily: "var(--font-outfit)" }}>
-              18.4<span className="text-[16px] block">kg</span>
-            </div>
-            <div className="mt-1 text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              CO₂ Prevented
-            </div>
-            <div className="mt-2 text-[11px] font-normal text-[#D97706]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              Environmental impact
-            </div>
-            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full bg-[#D97706] opacity-10 translate-x-5 translate-y-5" />
-          </motion.div>
-
-          {/* Card 3 — Money Saved */}
-          <motion.div
-            variants={cardVariants}
-            className="relative overflow-hidden p-5 shadow-sm bg-[#C8E8D0]"
-            style={{ borderRadius: "24px", minHeight: "160px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06)" }}
-          >
-            <div className="flex items-start justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[1px] text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                Money Saved
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70">
-                <ArrowUpRight size={16} className="text-[#1A6B3C]" />
-              </div>
-            </div>
-            <div className="mt-5 text-[36px] font-extrabold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-              ₹1,240
-            </div>
-            <div className="mt-1 text-[13px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              Saved on Groceries
-            </div>
-            <div className="mt-2 text-[11px] font-normal text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              vs retail prices
-            </div>
-            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full bg-[#1A6B3C] opacity-10 translate-x-5 translate-y-5" />
-          </motion.div>
-
-          {/* Card 4 — Donate Food (MODIFIED) */}
-          <motion.button
-            variants={cardVariants}
-            whileTap={{ scale: 0.96 }}
-            onClick={() => setScreen("donateFood")}
-            className="relative overflow-hidden p-5 text-left shadow-sm bg-[#F0D8C8]"
-            style={{ borderRadius: "24px", minHeight: "160px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06)" }}
-          >
-            <div className="flex items-start justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[1px] text-[#C25A2A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                DONATE
-              </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70">
-                <ArrowUpRight size={16} className="text-[#C25A2A]" />
-              </div>
-            </div>
-            <Camera size={32} className="text-[#C25A2A] mt-4" />
-            <div className="mt-3 text-[20px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-              Donate Food
-            </div>
-            <div className="mt-1.5 text-[13px] font-normal text-[#6A4A3A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              List surplus food for rescue
-            </div>
-            <div className="absolute -bottom-5 -right-5 h-20 w-20 rounded-full bg-[#C25A2A] opacity-10 translate-x-5 translate-y-5" />
-          </motion.button>
-        </motion.div>
-
-        {/* Nearby Rescues */}
-        <div className="mt-7 px-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[20px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-              Nearby Rescues
+        {/* Your Impact Stories */}
+        <div className="mt-8 mb-6">
+          <div className="px-5 flex items-center justify-between mb-4">
+            <h2 className="text-[18px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
+              Your Verified Impact
             </h2>
-            <button onClick={() => setScreen("ngoFeed")} className="text-[13px] font-medium text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
-              View all
-            </button>
           </div>
-
-          <motion.div
-            variants={staggerContainer}
-            initial="initial"
-            animate="animate"
-            className="mt-4 flex gap-3 overflow-x-auto pb-4 -mx-5 px-5"
-            style={{ scrollbarWidth: "none" }}
-          >
-            {rescueDonations.map((d) => {
-              const hoursToExpiry = (new Date(d.expiryDeadline).getTime() - Date.now()) / 3600000;
-              const isUrgent = hoursToExpiry < 2;
-              
-              let bgGradient = "linear-gradient(135deg, #1A6B3C, #22C55E)";
-              if (d.category === "Bakery") bgGradient = "linear-gradient(135deg, #C25A2A, #D97706)";
-              if (d.category === "Vegetables") bgGradient = "linear-gradient(135deg, #16A34A, #4ADE80)";
-              if (d.category === "Dairy") bgGradient = "linear-gradient(135deg, #1E3A8A, #3B82F6)";
-
-              return (
-                <motion.div
-                  key={d.id}
-                  variants={cardVariants}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setScreen("ngoFeed")}
-                  className="flex-shrink-0 overflow-hidden bg-white rounded-[20px]"
-                  style={{ width: "200px", boxShadow: "0px 2px 16px rgba(0,0,0,0.06)" }}
-                >
-                  <div className="relative h-[110px] w-full flex items-center justify-center" style={{ background: bgGradient }}>
-                    <Utensils size={32} className="text-white opacity-90" />
-                    
-                    <div
-                      className="absolute top-2 left-2 rounded-full px-2.5 py-1 text-[10px] font-bold text-white flex items-center gap-1"
-                      style={{ background: isUrgent ? "#DC2626" : (hoursToExpiry <= 3 ? "#D97706" : "#1A6B3C"), fontFamily: "var(--font-outfit)" }}
-                    >
-                      {isUrgent ? "URGENT" : (hoursToExpiry <= 3 ? `${Math.floor(hoursToExpiry)}h left` : "Today")}
-                    </div>
-                    
-                    <div
-                      className="absolute top-2 right-2 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
-                      style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", fontFamily: "var(--font-jakarta)" }}
-                    >
-                      {d.pickupDistanceKm} km
-                    </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-4 px-5 no-scrollbar">
+            {impactStories.map((story) => (
+              <div 
+                key={story.id} 
+                onClick={() => {
+                  useAppStore.getState().setActiveStoryId(story.id);
+                  setScreen("donorImpactStoryView" as any);
+                }}
+                className="flex min-w-[240px] flex-col overflow-hidden rounded-[20px] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+              >
+                <div className="h-[120px] w-full bg-[#E8E8E4] relative">
+                  {story.imageUrl && <img src={story.imageUrl} alt="Proof" className="h-full w-full object-cover" />}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full backdrop-blur-md">
+                    <CheckCircle2 size={12} color="#4ADE80" />
+                    <span className="text-[10px] font-bold text-white tracking-wider">Verified</span>
                   </div>
-                  <div className="p-3.5">
-                    <h4 className="line-clamp-2 text-[14px] font-semibold text-[#0A0A0A] leading-tight" style={{ fontFamily: "var(--font-outfit)" }}>
-                      {d.title}
-                    </h4>
-                    <p className="mt-1 text-[12px] font-normal text-[#8A8A8A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                      {d.donorName}
-                    </p>
-                    <div className="mt-1.5 flex items-center gap-1">
-                      <Users size={12} className="text-[#1A6B3C]" />
-                      <span className="text-[12px] font-semibold text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>~{d.servings} servings</span>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <span className="text-[12px] font-semibold text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>Volunteer to Rescue</span>
-                      <ChevronRight size={14} className="text-[#1A6B3C]" />
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                </div>
+                <div className="p-3">
+                  <h3 className="text-[15px] font-bold text-[#0A0A0A] leading-tight" style={{ fontFamily: "var(--font-outfit)" }}>{story.beneficiariesCount} people fed</h3>
+                  <p className="mt-1 text-[12px] text-[#8A8A8A] line-clamp-1" style={{ fontFamily: "var(--font-jakarta)" }}>From {story.foodType}</p>
+                </div>
+              </div>
+            ))}
+            
+            {impactStories.length === 0 && (
+              <div className="flex h-[180px] w-full flex-col items-center justify-center rounded-[20px] border-2 border-dashed border-[#E8E8E4] bg-white">
+                <Heart size={32} color="#8A8A8A" />
+                <span className="mt-3 text-[15px] font-bold text-[#4A4A4A]" style={{ fontFamily: "var(--font-outfit)" }}>No stories yet</span>
+                <span className="text-[12px] text-[#8A8A8A] mt-1" style={{ fontFamily: "var(--font-jakarta)" }}>Donate food to see your impact</span>
+              </div>
+            )}
+          </div>
         </div>
 
       </main>
-
     </div>
+  );
+}
+
+function ActionCard({ icon, title, subtitle, bg, onClick }: { icon: any, title: string, subtitle: string, bg: string, onClick: () => void }) {
+  return (
+    <button 
+      onClick={onClick}
+      className="flex flex-col items-start rounded-[20px] bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,0.03)] active:scale-95 transition-transform"
+    >
+      <div className="flex h-12 w-12 items-center justify-center rounded-[14px] mb-3" style={{ background: bg }}>
+        {icon}
+      </div>
+      <h3 className="text-[16px] font-bold text-[#0A0A0A] leading-tight" style={{ fontFamily: "var(--font-outfit)" }}>{title}</h3>
+      <p className="text-[12px] font-medium text-[#8A8A8A] mt-0.5" style={{ fontFamily: "var(--font-jakarta)" }}>{subtitle}</p>
+    </button>
   );
 }

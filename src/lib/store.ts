@@ -2,17 +2,15 @@
 
 import { create } from "zustand";
 import type { 
-  Role, Screen, Product, CartItem, Donation,
+  Role, Screen, DiscountProduct, Donation, Reservation, ImpactStory,
   ImpactData, NGOProfile, Volunteer, VolunteerRequest, Pickup, 
-  VolunteerStats, PickupRecord, RecipientProfile, DistributionPoint, FoodRequest
+  VolunteerStats, PickupRecord, RecipientProfile, DistributionPoint, FoodRequest, Shopkeeper
 } from "./types";
 import {
   MOCK_PRODUCTS,
   MOCK_DONATIONS,
   MOCK_BADGES,
   MOCK_IMPACT_EVENTS,
-  MOCK_SHOP_LISTINGS,
-  MOCK_SHOP_ORDERS,
 } from "./mock-data";
 
 interface AppState {
@@ -65,28 +63,20 @@ interface AppState {
   completeSetup: () => void;
   clearAuth: () => void;
 
-  // Cart
-  cart: CartItem[];
-  addToCart: (p: Product, qty?: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQty: (productId: string, qty: number) => void;
-  clearCart: () => void;
-  cartCount: () => number;
-  cartTotal: () => number;
-  cartSavings: () => number;
-
   // Active product (for detail sheet)
-  activeProduct: Product | null;
-  setActiveProduct: (p: Product | null) => void;
-  isCartOpen: boolean;
-  setCartOpen: (v: boolean) => void;
+  activeProduct: DiscountProduct | null;
+  setActiveProduct: (p: DiscountProduct | null) => void;
 
   // Active donation (for detail sheet)
   activeDonation: Donation | null;
   setActiveDonation: (d: Donation | null) => void;
 
-  // Products
-  products: Product[];
+  // Products & Reservations
+  products: DiscountProduct[];
+  reservations: Reservation[];
+  addReservation: (r: Reservation) => void;
+  updateReservationStatus: (id: string, status: Reservation['status']) => void;
+
   donations: Donation[];
 
   // Accept donation (move to accepted state)
@@ -100,18 +90,8 @@ interface AppState {
   badges: typeof MOCK_BADGES;
   events: typeof MOCK_IMPACT_EVENTS;
 
-  // Shop
-  shopListings: typeof MOCK_SHOP_LISTINGS;
-  shopOrders: typeof MOCK_SHOP_ORDERS;
-  updateOrderStatus: (id: string, status: string) => void;
-  addShopListing: (l: {
-    name: string;
-    category: string;
-    qty: number;
-    originalPrice: number;
-    discountPct: number;
-    daysToExpiry: number;
-  }) => void;
+  // Shopkeeper listings
+  addShopListing: (p: DiscountProduct) => void;
 
   // Donate flow state
   donateStep: number;
@@ -257,48 +237,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     role: null, setupComplete: false, screen: "login"
   }),
 
-  cart: [],
-  addToCart: (p, qty = 1) =>
-    set((state) => {
-      const existing = state.cart.find((i) => i.product.id === p.id);
-      if (existing) {
-        return {
-          cart: state.cart.map((i) =>
-            i.product.id === p.id ? { ...i, qty: i.qty + qty } : i
-          ),
-        };
-      }
-      return { cart: [...state.cart, { product: p, qty }] };
-    }),
-  removeFromCart: (productId) =>
-    set((state) => ({
-      cart: state.cart.filter((i) => i.product.id !== productId),
-    })),
-  updateQty: (productId, qty) =>
-    set((state) => ({
-      cart: state.cart
-        .map((i) => (i.product.id === productId ? { ...i, qty } : i))
-        .filter((i) => i.qty > 0),
-    })),
-  clearCart: () => set({ cart: [] }),
-  cartCount: () => get().cart.reduce((s, i) => s + i.qty, 0),
-  cartTotal: () =>
-    get().cart.reduce((s, i) => s + i.qty * i.product.discountedPrice, 0),
-  cartSavings: () =>
-    get().cart.reduce(
-      (s, i) => s + i.qty * (i.product.originalPrice - i.product.discountedPrice),
-      0
-    ),
-
   activeProduct: null,
   setActiveProduct: (p) => set({ activeProduct: p }),
-  isCartOpen: false,
-  setCartOpen: (v) => set({ isCartOpen: v }),
 
   activeDonation: null,
   setActiveDonation: (d) => set({ activeDonation: d }),
 
-  products: MOCK_PRODUCTS,
+  products: MOCK_PRODUCTS as unknown as DiscountProduct[],
+  reservations: [],
+  addReservation: (r) => set((state) => ({ reservations: [...state.reservations, r] })),
+  updateReservationStatus: (id, status) => set((state) => ({
+    reservations: state.reservations.map(r => r.id === id ? { ...r, status } : r)
+  })),
+
   donations: MOCK_DONATIONS,
 
   acceptDonation: (id) =>
@@ -315,34 +266,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   badges: MOCK_BADGES,
   events: MOCK_IMPACT_EVENTS,
 
-  shopListings: MOCK_SHOP_LISTINGS,
-  shopOrders: MOCK_SHOP_ORDERS,
-  updateOrderStatus: (id, status) =>
-    set((state) => ({
-      shopOrders: state.shopOrders.map((o) =>
-        o.id === id ? { ...o, status: status as any } : o
-      ),
-    })),
-  addShopListing: (l) =>
-    set((state) => {
-      const discountedPrice = Math.round(
-        l.originalPrice * (1 - l.discountPct / 100)
-      );
-      const newListing: any = {
-        id: `l${Date.now()}`,
-        name: l.name,
-        category: l.category,
-        qtyLeft: l.qty,
-        originalPrice: l.originalPrice,
-        discountedPrice,
-        discountPct: l.discountPct,
-        daysToExpiry: l.daysToExpiry,
-        imageColor: "from-emerald-50 to-teal-100",
-        soldToday: 0,
-        revenueToday: 0,
-      };
-      return { shopListings: [newListing, ...state.shopListings] };
-    }),
+  addShopListing: (p) => set((state) => ({
+    products: [...state.products, p]
+  })),
 
   donateStep: 1,
   setDonateStep: (n) => set({ donateStep: n }),

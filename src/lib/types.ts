@@ -1,4 +1,4 @@
-export type Role = "user" | "shop" | "ngo" | "volunteer" | "recipient";
+export type Role = "user" | "shopkeeper" | "ngo" | "volunteer" | "recipient";
 
 export type Screen =
   | "onboarding"
@@ -7,19 +7,11 @@ export type Screen =
   | "role-select"
   | "auth"
   | "home"
-  | "marketplace"
   | "donate"
   | "impact"
   | "profile"
-  | "product-detail"
-  | "cart"
-  | "checkout"
-  | "order-tracking"
   | "ngo-feed"
   | "volunteer-map"
-  | "shop-dashboard"
-  | "shop-inventory"
-  | "shop-orders"
   | "ai-assistant"
   // Master Prompt Screens
   | "splash"
@@ -28,8 +20,6 @@ export type Screen =
   | "donateFood"
   | "donationTracking"
   | "rescueMap"
-  | "productDetail"
-  | "orderStatus"
   | "userProfile"
   | "impactDashboard"
   | "ngoMap"
@@ -44,30 +34,48 @@ export type Screen =
   | "recipientMap"
   | "foodRequest"
   | "requestStatus"
-  | "recipientProfile";
+  | "recipientProfile"
+  // V2 New Screens
+  | "shopkeeperSetup"
+  | "shopkeeperDashboard"
+  | "addProductWizard"
+  | "productManager"
+  | "localSavingsMarket"
+  | "productDetailReserve"
+  | "reservationConfirmation"
+  | "myReservations"
+  | "ngoDistributionProofUploader"
+  | "donorImpactStoryView"
+  | "ngo-auth-choice"
+  | "recipient-auth-choice"
+  | "recipient-login"
+  | "recipient-setup"
+  | "ngo-setup"
+  | "volunteer-auth-choice";
 
-export interface Product {
+export type UrgencyLevel = 'fresh' | 'attention' | 'high_discount' | 'urgent' | 'critical';
+
+export interface DiscountProduct {
   id: string;
-  shopId: string;
-  shopName: string;
-  shopDistanceKm: number;
-  shopRating: number;
+  shopkeeperId: string;
   name: string;
-  description: string;
-  category: ProductCategory;
-  imageColor: string; // gradient stops for placeholder
-  imageEmoji: string; // not displayed, used as identifier only
-  originalPrice: number;
-  discountedPrice: number;
-  quantity: number;
-  unit: string;
-  bestBefore: string; // ISO date
-  aiPredictedSafeUntil: string; // ISO date
-  aiConfidence: number; // 0-1
-  batchNo: string;
-  storageType: "ambient" | "refrigerated" | "frozen";
-  isAiMatch?: boolean;
+  categoryId: ProductCategory;
+  mrp: number;
+  sellingPrice: number;
+  discountPercent: number; // auto-calculated
+  stockQuantity: number;
   imageUrl?: string;
+  imageColor: string; // fallback
+  manufacturingDate: Date;
+  expiryDate: Date;
+  daysUntilExpiry: number; // auto-calculated
+  urgencyLevel: UrgencyLevel;
+  autoDiscountRecommended: boolean;
+  isListed: boolean;
+  soldCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 export type ProductCategory =
@@ -104,9 +112,22 @@ export interface Donation {
   volunteerAssigned?: string;
 }
 
-export interface CartItem {
-  product: Product;
-  qty: number;
+export interface Reservation {
+  id: string;
+  productId: string;
+  userId: string;
+  shopkeeperId: string;
+  status: 'pending' | 'active' | 'completed' | 'expired' | 'cancelled';
+  reservationCode: string; // ZWR-2024-XXXX
+  reservationSlot: 'today_am' | 'today_pm' | 'tomorrow_morning';
+  claimedAt: Date;
+  collectedAt?: Date | null;
+  cancelledAt?: Date | null;
+  qrCodeUrl?: string;
+  verifiedPickup: boolean;
+  createdAt: Date;
+  expiresAt: Date;
+  notes: string;
 }
 
 export interface ImpactBadge {
@@ -129,16 +150,38 @@ export interface ImpactEvent {
   timestamp: string;
 }
 
-export interface ShopOrder {
+export interface Shopkeeper {
   id: string;
-  customerName: string;
-  items: { name: string; qty: number; price: number }[];
-  total: number;
-  status: "new" | "accepted" | "packing" | "ready" | "completed";
-  placedAt: string;
-  distance: number;
+  userId: string;
+  businessName: string;
+  businessType: string;
+  gstNumber?: string;
+  address: string;
+  lat: number;
+  lng: number;
+  contactNumbers: string[];
+  operatingHours: any[];
+  verified: boolean;
+  isActive: boolean;
+  totalRevenueEarned: number;
+  totalWasteSaved: number;
+  rating: number;
 }
 
+export interface ImpactStory {
+  id: string;
+  donationId: string;
+  ngoId: string;
+  volunteerId: string;
+  images: { url: string; caption?: string }[];
+  beneficiaryCount: number;
+  distributionDescription: string;
+  gpsLocation: { lat: number; lng: number };
+  verificationStatus: 'pending' | 'verified';
+  verifiedAt?: Date;
+  createdAt: Date;
+  viewedByDonor: boolean;
+}
 export interface ShopListing {
   id: string;
   name: string;

@@ -16,7 +16,7 @@ interface TabDef {
 const TABS_BY_ROLE: Record<Role, TabDef[]> = {
   user: [
     { id: "home", icon: Home, screen: "userHome", label: "Home" },
-    { id: "shop", icon: Store, screen: "marketplace", label: "Shop" },
+    { id: "reserve", icon: Store, screen: "localSavingsMarket", label: "Reserve" },
     { id: "donate", icon: Camera, screen: "donateFood", label: "Donate", center: true },
     { id: "track", icon: MapPin, screen: "donationTracking", label: "Track" },
     { id: "profile", icon: User, screen: "userProfile", label: "Profile" },
@@ -27,9 +27,9 @@ const TABS_BY_ROLE: Record<Role, TabDef[]> = {
     { id: "volunteers", icon: Users, screen: "ngoVolunteers", label: "Team" },
     { id: "profile", icon: User, screen: "ngoProfile", label: "Profile" },
   ],
-  shop: [
-    { id: "home", icon: Store, screen: "shop-dashboard", label: "Shop" },
-    { id: "profile", icon: User, screen: "impact", label: "Profile" },
+  shopkeeper: [
+    { id: "home", icon: Store, screen: "shopkeeperDashboard", label: "Shop" },
+    { id: "profile", icon: User, screen: "impactDashboard", label: "Profile" },
   ],
   volunteer: [
     { id: "home", icon: Home, screen: "volunteerHome", label: "Home" },
@@ -38,18 +38,17 @@ const TABS_BY_ROLE: Record<Role, TabDef[]> = {
   ],
   recipient: [
     { id: "home", icon: Home, screen: "recipientHome", label: "Home" },
-    { id: "shop", icon: Store, screen: "marketplace", label: "Shop" },
     { id: "request", icon: HandHeart, screen: "foodRequest", label: "Request" },
     { id: "profile", icon: User, screen: "recipientProfile", label: "Profile" },
   ],
 };
 
 const homeScreensByRole: Record<Role, string[]> = {
-  user: ["home", "userHome", "checkout", "orderStatus", "donateFood", "donationTracking", "marketplace"],
+  user: ["home", "userHome", "donateFood", "donationTracking", "localSavingsMarket"],
   ngo: ["ngoFeed", "ngoMap"],
-  shop: ["shop-dashboard"],
+  shopkeeper: ["shopkeeperDashboard"],
   volunteer: ["volunteerHome"],
-  recipient: ["recipientHome", "marketplace", "foodRequest"],
+  recipient: ["recipientHome", "foodRequest"],
 };
 
 export function BottomNav() {
@@ -57,11 +56,9 @@ export function BottomNav() {
   const screen = useAppStore((s) => s.screen);
   const setScreen = useAppStore((s) => s.setScreen);
   const setAssistantOpen = useAppStore((s) => s.setAssistantOpen);
-  const cartCount = useAppStore((s) => s.cartCount);
-  const setCartOpen = useAppStore((s) => s.setCartOpen);
 
   if (!role) return null;
-  if (["checkout", "order-tracking", "donate", "donation-tracking", "delivery-tracking", "volunteerMap"].includes(screen)) return null;
+  if (["shopkeeperSetup", "productDetailReserve", "reservationConfirmation", "addProductWizard", "ngoDistributionProofUploader", "donorImpactStoryView", "donate", "donation-tracking", "delivery-tracking", "ngoDeliveryTracking", "volunteerMap"].includes(screen)) return null;
 
   const tabs = TABS_BY_ROLE[role];
 
@@ -84,33 +81,7 @@ export function BottomNav() {
         </div>
       </motion.button>
 
-      {/* Floating cart button (user only) */}
-      {role === "user" && cartCount() > 0 && (
-        <motion.button
-          initial={{ scale: 0, y: 50 }}
-          animate={{ scale: 1, y: 0 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setCartOpen(true)}
-          className="absolute left-4 z-40"
-          style={{ bottom: "100px" }}
-          aria-label="Cart"
-        >
-          <div
-            className="flex h-12 items-center gap-2 rounded-full px-4"
-            style={{
-              background: "rgba(255,255,255,0.75)",
-              backdropFilter: "blur(20px) saturate(180%)",
-              border: "1px solid rgba(255,255,255,0.60)",
-              boxShadow: "0px 4px 24px rgba(0,0,0,0.08)",
-            }}
-          >
-            <ShoppingBag size={16} className="text-[#1A6B3C]" />
-            <span className="text-sm font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-              {cartCount()}
-            </span>
-          </div>
-        </motion.button>
-      )}
+      {/* Removed Floating cart button as e-commerce is removed */}
 
       {/* Liquid glassmorphism bottom navigation */}
       <div className="absolute inset-x-0 z-30 flex justify-center px-4" style={{ bottom: "16px", pointerEvents: "none" }}>

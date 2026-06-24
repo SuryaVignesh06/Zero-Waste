@@ -19,15 +19,10 @@ import { NgoRecipientChoice } from "./NgoRecipientChoice";
 import { NgoAuthChoice } from "./NgoAuthChoice";
 import { NgoLogin } from "./NgoLogin";
 import { HomeUser } from "./HomeUser";
-import { Marketplace } from "./Marketplace";
-import { ProductDetailSheet, CartSheet } from "./ProductDetailSheet";
-import { DonateFood } from "./DonateFood";
-import { DonationTracking } from "./DonationTracking";
-import { DeliveryTracking } from "./DeliveryTracking";
-import { Checkout, OrderTracking } from "./Checkout";
 import { NgoFeed } from "./NgoFeed";
-import { ShopDashboard } from "./ShopDashboard";
-import { ImpactDashboard } from "./ImpactDashboard";
+import { NgoDeliveryTracking } from "./NgoDeliveryTracking";
+import { NgoDistributionProofUploader } from "./NgoDistributionProofUploader";
+import { DonorImpactStoryView } from "./DonorImpactStoryView";
 import { Profile } from "./Profile";
 import { BottomNav } from "./BottomNav";
 import { AiAssistant } from "./AiAssistant";
@@ -35,6 +30,13 @@ import { RecipientHome } from "./RecipientHome";
 import { FoodRequest } from "./FoodRequest";
 import { RecipientAuthChoice } from "./RecipientAuthChoice";
 import { RecipientLogin } from "./RecipientLogin";
+import { ShopkeeperSetup } from "./ShopkeeperSetup";
+import { ShopkeeperDashboard } from "./ShopkeeperDashboard";
+import { LocalSavingsMarket } from "./LocalSavingsMarket";
+import { ReservationConfirmation } from "./ReservationConfirmation";
+import { AddProductWizard } from "./AddProductWizard";
+import { ProductDetailReserve } from "./ProductDetailReserve";
+import { MyReservations } from "./MyReservations";
 
 const Dummy = ({ title }: { title: string }) => (
   <div className="flex flex-1 items-center justify-center bg-[#F7F5F0]">
@@ -97,33 +99,39 @@ export function AppShell() {
   if (screen === "recipient-login") {
     return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><RecipientLogin /></div>;
   }
+  if (screen === "shopkeeperSetup") {
+    return <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}><ShopkeeperSetup /></div>;
+  }
 
   const renderScreen = () => {
     switch (screen) {
       case "home":
-      case "userHome": return role === "shop" ? <ShopDashboard /> : role === "ngo" ? <NgoFeed /> : role === "volunteer" ? <VolunteerMap /> : <HomeUser />;
-      case "marketplace": return <Marketplace />;
+      case "userHome": return role === "shopkeeper" ? <ShopkeeperDashboard /> : role === "ngo" ? <NgoFeed /> : role === "volunteer" ? <VolunteerMap /> : <HomeUser />;
       case "donate":
       case "donateFood": return <DonateFood />;
       case "donation-tracking":
       case "donationTracking": return <DonationTracking />;
       case "delivery-tracking":
-      case "ngoDeliveryTracking": return <DeliveryTracking />;
-      case "checkout": return <Checkout />;
-      case "order-tracking":
-      case "orderStatus": return <OrderTracking />;
+      case "ngoDeliveryTracking": return <NgoDeliveryTracking />;
+      case "ngoDistributionProofUploader": return <NgoDistributionProofUploader />;
+      case "donorImpactStoryView": return <DonorImpactStoryView />;
       case "ngo-feed":
       case "ngoFeed": return <NgoFeed />;
       case "volunteer-map":
       case "rescueMap": return <VolunteerMap />;
-      case "shop-dashboard": return <ShopDashboard />;
+      case "shop-dashboard": return <ShopkeeperDashboard />;
+      case "shopkeeperDashboard": return <ShopkeeperDashboard />;
       case "impact":
       case "impactDashboard": return <ImpactDashboard />;
       case "profile":
       case "userProfile": return <Profile />;
       
       // New screens
-      case "productDetail": return <Dummy title="Product Detail" />;
+      case "productDetailReserve": return <ProductDetailReserve />;
+      case "localSavingsMarket": return <LocalSavingsMarket />;
+      case "reservationConfirmation": return <ReservationConfirmation />;
+      case "myReservations": return <MyReservations />;
+      case "addProductWizard": return <AddProductWizard />;
       case "ngoMap": return <Dummy title="NGO Map" />;
       case "ngoVolunteers": return <Dummy title="NGO Volunteers" />;
       case "ngoProfile": return <Profile />;

@@ -473,7 +473,7 @@ function SuccessScreen() {
   );
 }
 
-function LiveCamera({ onCapture, onCancel }: { onCapture: (url: string) => void, onCancel?: () => void }) {
+export function LiveCamera({ onCapture, onCancel }: { onCapture: (url: string) => void, onCancel?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 

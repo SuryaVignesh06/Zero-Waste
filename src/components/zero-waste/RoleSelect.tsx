@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { User, Building2, Bike, HeartHandshake, CheckCircle2 } from "lucide-react";
+import { User, Building2, Bike, HeartHandshake, CheckCircle2, Store } from "lucide-react";
 
 const ROLES = [
   {
@@ -42,12 +42,21 @@ const ROLES = [
     accent: "#D97706",
     icon: Bike,
   },
+  {
+    id: "shopkeeper" as const,
+    title: "Shopkeeper",
+    desc: "List near-expiry products and manage discounts.",
+    bg: "#FEF3C7",
+    iconBg: "#F59E0B",
+    accent: "#F59E0B",
+    icon: Store,
+  },
 ];
 
 export function RoleSelect() {
   const setRole = useAppStore((s) => s.setRole);
   const setScreen = useAppStore((s) => s.setScreen);
-  const [selectedRole, setSelectedRole] = useState<"user" | "ngo" | "volunteer" | "recipient" | null>(null);
+  const [selectedRole, setSelectedRole] = useState<"user" | "ngo" | "volunteer" | "recipient" | "shopkeeper" | null>(null);
 
   const handleContinue = () => {
     if (!selectedRole) return;
@@ -59,6 +68,8 @@ export function RoleSelect() {
       setScreen("volunteer-auth-choice" as any);
     } else if (selectedRole === "recipient") {
       setScreen("recipient-auth-choice" as any);
+    } else if (selectedRole === "shopkeeper") {
+      setScreen("shopkeeperSetup" as any);
     } else {
       setScreen(`${selectedRole}-setup` as any);
     }
