@@ -144,6 +144,10 @@ interface AppState {
   nearbyDistributionPoints: DistributionPoint[];
   activeRequest: FoodRequest | null;
   requestHistory: FoodRequest[];
+  
+  impactStories: any[];
+  activeStoryId: string | null;
+  setActiveStoryId: (id: string | null) => void;
 }
 
 export interface DonationForm {
@@ -354,5 +358,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   recipientProfile: null,
   nearbyDistributionPoints: [],
   activeRequest: null,
-  requestHistory: []
+  requestHistory: [],
+
+  impactStories: [],
+  activeStoryId: null,
+  setActiveStoryId: (id) => set({ activeStoryId: id })
 }));

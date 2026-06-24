@@ -135,11 +135,11 @@ export function HomeUser() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <ActionCard 
-              icon={<ShoppingBag size={24} color="#D97706" />}
-              title="Save Food"
-              subtitle="Buy discounted"
-              bg="#FEF3C7"
-              onClick={() => setScreen("localSavingsMarket")}
+              icon={<Heart size={24} color="#C25A2A" />}
+              title="Impact Stories"
+              subtitle="See real results"
+              bg="#F0D8C8"
+              onClick={() => setScreen("donorImpactStoryView" as any)}
             />
             <ActionCard 
               icon={<Heart size={24} color="#1A6B3C" />}
@@ -174,7 +174,7 @@ export function HomeUser() {
           </div>
           
           <div className="flex gap-4 overflow-x-auto pb-4 px-5 no-scrollbar">
-            {impactStories.map((story) => (
+            {(impactStories || []).map((story) => (
               <div 
                 key={story.id} 
                 onClick={() => {
@@ -198,7 +198,7 @@ export function HomeUser() {
               </div>
             ))}
             
-            {impactStories.length === 0 && (
+            {(!impactStories || impactStories.length === 0) && (
               <div className="flex h-[180px] w-full flex-col items-center justify-center rounded-[20px] border-2 border-dashed border-[#E8E8E4] bg-white">
                 <Heart size={32} color="#8A8A8A" />
                 <span className="mt-3 text-[15px] font-bold text-[#4A4A4A]" style={{ fontFamily: "var(--font-outfit)" }}>No stories yet</span>
