@@ -1,268 +1,331 @@
-export type Role = "user" | "shopkeeper" | "ngo" | "volunteer" | "recipient";
+// ─── ENUMS & UNIONS ──────────────────────────────
 
-export type Screen =
-  | "onboarding"
-  | "login"
-  | "otp"
-  | "role-select"
-  | "auth"
-  | "home"
-  | "donate"
-  | "impact"
-  | "profile"
-  | "ngo-feed"
-  | "volunteer-map"
-  | "ai-assistant"
-  // Master Prompt Screens
-  | "splash"
-  | "roleSelect"
-  | "userHome"
-  | "donateFood"
-  | "donationTracking"
-  | "rescueMap"
-  | "userProfile"
-  | "impactDashboard"
-  | "ngoMap"
-  | "ngoDeliveryTracking"
-  | "ngoVolunteers"
-  | "ngoProfile"
-  | "ngoReports"
-  | "volunteerPickup"
-  | "volunteerHistory"
-  | "volunteerProfile"
-  | "recipientHome"
-  | "recipientMap"
-  | "foodRequest"
-  | "requestStatus"
-  | "recipientProfile"
-  // V2 New Screens
-  | "shopkeeperSetup"
-  | "shopkeeperDashboard"
-  | "addProductWizard"
-  | "productManager"
-  | "localSavingsMarket"
-  | "productDetailReserve"
-  | "reservationConfirmation"
-  | "myReservations"
-  | "ngoDistributionProofUploader"
-  | "donorImpactStoryView"
-  | "ngo-auth-choice"
-  | "recipient-auth-choice"
-  | "recipient-login"
-  | "recipient-setup"
-  | "ngo-setup"
-  | "volunteer-auth-choice";
+export type PanelRole = 
+  "donor_shopkeeper" | "ngo_receiver" | "volunteer"
 
-export type UrgencyLevel = 'fresh' | 'attention' | 'high_discount' | 'urgent' | 'critical';
+export type SubRole = "donor" | "shopkeeper"
 
-export interface DiscountProduct {
-  id: string;
-  shopkeeperId: string;
-  name: string;
-  categoryId: ProductCategory;
-  mrp: number;
-  sellingPrice: number;
-  discountPercent: number; // auto-calculated
-  stockQuantity: number;
-  imageUrl?: string;
-  imageColor: string; // fallback
-  manufacturingDate: Date;
-  expiryDate: Date;
-  daysUntilExpiry: number; // auto-calculated
-  urgencyLevel: UrgencyLevel;
-  autoDiscountRecommended: boolean;
-  isListed: boolean;
-  soldCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date | null;
+export type DonorType = 
+  "hotel" | "marriage_hall" | "hostel" | 
+  "canteen" | "individual" | "corporate_cafeteria"
+
+export type ShopType = 
+  "grocery" | "bakery" | "restaurant" | 
+  "supermarket" | "dairy" | "sweet_shop"
+
+export type UrgencyLevel = 
+  "emergency" | "urgent" | "moderate" | "normal"
+
+export type FoodCategory = 
+  "cooked" | "raw" | "packaged" | 
+  "bakery" | "beverages" | "dairy"
+
+export type InventoryCategory = 
+  "vegetables" | "fruits" | "dairy" | "bakery" | 
+  "packaged" | "beverages" | "grains" | 
+  "snacks" | "sweets" | "spices" | "oils" | "others"
+
+export type ItemUnit = 
+  "kg" | "pieces" | "packets" | 
+  "liters" | "dozen" | "boxes" | "bundles"
+
+export type FoodCondition = 
+  "freshly_cooked" | "good" | "needs_quick_pickup"
+
+export type ItemCondition = 
+  "fresh" | "near_expiry" | "expiring_today" | "expired"
+
+export type SellCondition = 
+  "near_expiry" | "excess" | 
+  "damaged_packaging" | "old_stock"
+
+export type DonationStatus = 
+  "listed" | "reserved" | 
+  "picked_up" | "completed" | "expired"
+
+export type SellItemStatus = 
+  "available" | "reserved" | "sold"
+
+export type InventoryStatus = 
+  "in_stock" | "listed_for_sale" | 
+  "listed_for_donation" | "reserved" | "removed"
+
+export type InventoryAction = 
+  "sell_discounted" | "donate" | "notify_only"
+
+export type RequestStatus = 
+  "open" | "accepted" | "fulfilled" | "expired"
+
+export type BadgeTier = 
+  "bronze" | "silver" | "gold" | "platinum"
+
+// ─── CORE MODELS ─────────────────────────────────
+
+export interface User {
+  id: string
+  name: string
+  phone: string
+  subRole: SubRole
+  donorType?: DonorType
+  shopType?: ShopType
+  address: string
+  area: string
+  city: string
+  lat: number
+  lng: number
+  avatar: string
+  joinedDate: Date
+  totalPoints: number
+  totalDonations: number
+  totalMealsServed: number
+  totalCO2Saved: number
+  badgeTier: BadgeTier
+  isVerified: boolean
 }
 
-export type ProductCategory =
-  | "dairy"
-  | "bakery"
-  | "vegetables"
-  | "fruits"
-  | "snacks"
-  | "staples"
-  | "beverages"
-  | "cooked";
+export interface PullRequest {
+  id: string
+  ngoName: string
+  ngoId: string
+  ngoRating: number
+  ngoVerified: boolean
+  ngoAvatar: string
+  foodType: FoodCategory | "any"
+  servingsNeeded: number
+  urgency: UrgencyLevel
+  message: string
+  distance: number
+  requestedAt: Date
+  expiresAt: Date
+  status: RequestStatus
+  acceptedBy?: string
+  acceptedAt?: Date
+}
 
 export interface Donation {
-  id: string;
-  donorName: string;
-  donorType: "marriage-hall" | "restaurant" | "hostel" | "household" | "event";
-  title: string;
-  description: string;
-  foodType: "cooked" | "raw" | "packaged";
-  quantity: number;
-  unit: string;
-  servings: number;
-  pickupAddress: string;
-  pickupDistanceKm: number;
-  pickupWindowStart: string; // ISO
-  pickupWindowEnd: string; // ISO
-  expiryDeadline: string; // ISO — countdown target
-  aiFreshnessScore: number; // 0-1
-  aiMatchScore?: number; // 0-100, for volunteer matching
-  status: "listed" | "accepted" | "picked_up" | "delivered" | "expired";
-  imageColor: string;
-  imageUrl?: string;
-  ngoAssigned?: string;
-  volunteerAssigned?: string;
+  id: string
+  donorId: string
+  foodName: string
+  photo: string
+  category: FoodCategory
+  servings: number
+  condition: FoodCondition
+  pickupDeadline: Date
+  specialInstructions?: string
+  address: string
+  lat: number
+  lng: number
+  status: DonationStatus
+  reservedBy?: string
+  reservedAt?: Date
+  pickedUpAt?: Date
+  completedAt?: Date
+  listedAt: Date
+  pointsEarned: number
+  estimatedValue: number
 }
 
-export interface Reservation {
-  id: string;
-  productId: string;
-  userId: string;
-  shopkeeperId: string;
-  status: 'pending' | 'active' | 'completed' | 'expired' | 'cancelled';
-  reservationCode: string; // ZWR-2024-XXXX
-  reservationSlot: 'today_am' | 'today_pm' | 'tomorrow_morning';
-  claimedAt: Date;
-  collectedAt?: Date | null;
-  cancelledAt?: Date | null;
-  qrCodeUrl?: string;
-  verifiedPickup: boolean;
-  createdAt: Date;
-  expiresAt: Date;
-  notes: string;
+export interface SellItem {
+  id: string
+  donorId: string
+  itemName: string
+  photo: string
+  condition: SellCondition
+  quantity: number
+  unit: ItemUnit
+  category: string
+  originalPrice: number
+  sellingPrice: number
+  discountPercent: number
+  expiresAt?: Date
+  description: string
+  status: SellItemStatus
+  listedAt: Date
+  soldAt?: Date
+  earnedAmount?: number
+  pointsEarned: number
 }
 
-export interface ImpactBadge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string; // lucide name
-  unlocked: boolean;
-  progress?: number; // 0-100
+export interface InventoryItem {
+  id: string
+  shopId: string
+  itemName: string
+  photos: string[]
+  category: InventoryCategory
+  subCategory?: string
+  quantity: number
+  unit: ItemUnit
+  originalPrice: number
+  sellingPrice: number
+  discountPercent: number
+  manufacturedDate?: Date
+  expiryDate: Date
+  daysToExpiry: number
+  condition: ItemCondition
+  storageType: "refrigerated" | "room_temp" | "frozen"
+  batchId?: string
+  notes?: string
+  autoAction: InventoryAction
+  autoDiscountPercent?: number
+  autoListDaysBefore?: number
+  status: InventoryStatus
+  addedAt: Date
+  updatedAt: Date
 }
 
-export interface ImpactEvent {
-  id: string;
-  type: "rescue" | "purchase" | "donate" | "volunteer";
-  label: string;
-  mealsSaved: number;
-  co2SavedKg: number;
-  moneySaved: number;
-  points: number;
-  timestamp: string;
+export interface DonationHistory {
+  id: string
+  type: "donation" | "sell"
+  foodName: string
+  servings?: number
+  quantity?: number
+  unit?: ItemUnit
+  date: Date
+  receivedBy?: string
+  soldTo?: string
+  pointsEarned: number
+  status: "completed" | "expired" | "cancelled"
+  taxValue: number
+  earnedAmount?: number
 }
 
-export interface Shopkeeper {
-  id: string;
-  userId: string;
-  businessName: string;
-  businessType: string;
-  gstNumber?: string;
-  address: string;
-  lat: number;
-  lng: number;
-  contactNumbers: string[];
-  operatingHours: any[];
-  verified: boolean;
-  isActive: boolean;
-  totalRevenueEarned: number;
-  totalWasteSaved: number;
-  rating: number;
+export interface Certificate {
+  id: string
+  type: "tax_receipt" | "donation_certificate" | "milestone"
+  title: string
+  receiptNumber: string
+  date: Date
+  periodStart: Date
+  periodEnd: Date
+  totalDonationValue: number
+  taxBenefitValue: number
+  donorName: string
+  donorAddress: string
+  donorPhone: string
+  donationItems: DonationHistory[]
 }
 
-export interface ImpactStory {
-  id: string;
-  donationId: string;
-  ngoId: string;
-  volunteerId: string;
-  images: { url: string; caption?: string }[];
-  beneficiaryCount: number;
-  distributionDescription: string;
-  gpsLocation: { lat: number; lng: number };
-  verificationStatus: 'pending' | 'verified';
-  verifiedAt?: Date;
-  createdAt: Date;
-  viewedByDonor: boolean;
-}
-export interface ShopListing {
-  id: string;
-  name: string;
-  category: ProductCategory;
-  qtyLeft: number;
-  originalPrice: number;
-  discountedPrice: number;
-  discountPct: number;
-  daysToExpiry: number;
-  imageColor: string;
-  imageUrl?: string;
-  soldToday: number;
-  revenueToday: number;
+export interface ToastNotification {
+  id: string
+  type: "success" | "error" | "warning" | "info"
+  message: string
+  duration?: number
 }
 
-export interface ImpactData {
-  mealsRescued: number;
-  co2Prevented: number;
-  moneySaved: number;
-  impactPoints: number;
+export interface VolunteerLocation {
+  lat: number
+  lng: number
+  address: string
 }
 
-export interface NGOProfile {
-  id: string;
-  name: string;
-  verified: boolean;
-  location: string;
-  mealsReceived: number;
-  volunteersCount: number;
-  successRate: number;
+export interface VolunteerMission {
+  id: string
+  providerName: string
+  providerLocation: VolunteerLocation
+  ngoName: string
+  ngoLocation: VolunteerLocation
+  servings: number
+  urgency: UrgencyLevel
+  status: "available" | "active" | "completed"
+  pointsAwarded?: number
+  completedAt?: Date
 }
 
-export interface Volunteer {
-  id: string;
-  name: string;
-  status: "online" | "on-duty" | "offline";
-  rating: number;
-  rescues: number;
-  zone: number;
+export type VolunteerType = "nss" | "ncc" | "college_club" | "corporate_csr" | "independent"
+
+export interface VolunteerProfileData {
+  id: string
+  displayName: string
+  totalDeliveries: number
+  impactPoints: number
+  distanceCovered: number
+  badges: string[]
+  volunteerType: VolunteerType
+  streak: number
+  weeklyHours: number[] // Array of hours for the line chart (7 data points)
+  rank: number
+  totalHours: number
+  milestoneHours: number // For "50 Hour Certificate" goal
+  institution?: string // e.g. "SRM University"
+  role?: string // e.g. "NSS Student"
 }
 
-export interface VolunteerRequest {
-  id: string;
-  volunteerId: string;
-  status: "pending" | "accepted" | "declined";
-}
+// ─── STORE SHAPE ──────────────────────────────────
 
-export interface Pickup {
-  id: string;
-  donationId: string;
-  status: "assigned" | "in_transit" | "completed";
-}
+export interface AppStore {
+  // Auth & Role
+  activePanel: PanelRole
+  subRole: SubRole
+  isLoggedIn: boolean
+  user: User | null
+  volunteerProfile: VolunteerProfileData | null
+  activeScreen: string
+  previousScreen: string
 
-export interface VolunteerStats {
-  mealsToday: number;
-  points: number;
-  rescues: number;
-}
+  activePanel2SubRole?: "ngo" | "recipient"
+  ngoUser?: any
+  recipientUser?: any
+  ngoVolunteers?: any[]
+  bulkStoreItems?: any[]
+  smallStoreItems?: any[]
+  myRequests?: any[]
 
-export interface PickupRecord {
-  id: string;
-  donationId: string;
-  timestamp: Date;
-}
+  // Donor Data
+  pullRequests: PullRequest[]
+  donations: Donation[]
+  sellItems: SellItem[]
+  donationHistory: DonationHistory[]
 
-export interface RecipientProfile {
-  id: string;
-  name: string;
-  location: string;
-}
+  // Shopkeeper Data
+  inventory: InventoryItem[]
 
-export interface DistributionPoint {
-  id: string;
-  name: string;
-  location: string;
-  distance: number;
-}
+  // Volunteer Data
+  availableMissions: VolunteerMission[]
+  activeMission: VolunteerMission | null
+  completedMissions: VolunteerMission[]
 
-export interface FoodRequest {
-  id: string;
-  recipientId: string;
-  servings: number;
-  status: "pending" | "fulfilled";
+  // UI State
+  toasts: ToastNotification[]
+  isLoading: boolean
+  selectedRequestId: string | null
+  selectedInventoryItemId: string | null
+  taxReceiptPeriod: "month" | "quarter" | "year" | "custom"
+  showAddMenu: boolean
+
+  // Actions — Auth
+  setActivePanel: (panel: PanelRole) => void
+  setSubRole: (role: SubRole) => void
+  setActivePanel2SubRole: (role: "ngo" | "recipient") => void
+  login: (phone: string) => void
+  logout: () => void
+  setActiveScreen: (screen: string) => void
+  setShowAddMenu: (show: boolean) => void
+
+  // Actions — Pull Requests
+  acceptRequest: (requestId: string) => void
+
+  // Actions — Donations
+  addDonation: (donation: Omit<Donation, "id" | "listedAt" | "pointsEarned" | "estimatedValue">) => void
+  
+  // Actions — Sell Items
+  addSellItem: (item: Omit<SellItem, "id" | "listedAt" | "discountPercent" | "pointsEarned">) => void
+
+  // Actions — Inventory
+  addInventoryItem: (item: Omit<InventoryItem, "id" | "addedAt" | "updatedAt" | "daysToExpiry" | "condition" | "discountPercent">) => void
+  updateInventoryItem: (id: string, updates: Partial<InventoryItem>) => void
+  removeInventoryItem: (id: string) => void
+  donateFromInventory: (itemId: string, quantity: number, pickupHours: number) => void
+  sellFromInventory: (itemId: string, quantity: number, sellingPrice: number) => void
+
+  // Actions — Volunteer
+  acceptMission: (missionId: string) => void
+  completeMission: () => void
+
+  // Actions — UI
+  addToast: (toast: Omit<ToastNotification, "id">) => void
+  removeToast: (id: string) => void
+  setSelectedRequest: (id: string | null) => void
+  setSelectedInventoryItem: (id: string | null) => void
+  setTaxReceiptPeriod: (period: "month" | "quarter" | "year" | "custom") => void
+  calculatePoints: () => number
 }

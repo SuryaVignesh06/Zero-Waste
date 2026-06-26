@@ -3,50 +3,193 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { ArrowLeft, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Leaf, Send } from "lucide-react";
+
+import { ScreenWrapper } from "../ui/ScreenWrapper";
+import { IconButton } from "../ui/Buttons/IconButton";
+import { springGentle, springBouncy } from "@/lib/animations";
+import { CelebrationScreen } from "./CelebrationScreen";
+
+// ─── Helper: derive celebration mode from role ─────────────────────────────
+
+function getCelebrationMode(activePanel: string, subRole: string): "donor" | "shopkeeper" | "volunteer" {
+  if (activePanel === "volunteer") return "volunteer";
+  if (subRole === "shopkeeper") return "shopkeeper";
+  return "donor"; // donor_shopkeeper+donor, ngo_receiver, etc.
+}
+
+function getCelebrationContent(mode: "donor" | "shopkeeper" | "volunteer") {
+  switch (mode) {
+    case "donor":
+      return {
+        title: "Welcome, Hero! 🫶",
+        subtitle: "Your account is verified! Start donating surplus food and save lives today.",
+        points: 20,
+        ctaLabel: "Start Saving Lives",
+      };
+    case "shopkeeper":
+      return {
+        title: "Shop Verified! 🏪",
+        subtitle: "Your store is now live on ZeroWaste. List your near-expiry items and make them count!",
+        points: 15,
+        ctaLabel: "Open My Shop",
+      };
+    case "volunteer":
+      return {
+        title: "Ready to Ride! 🚴",
+        subtitle: "Welcome aboard! You're now part of a network delivering hope to kids every day!",
+        points: 25,
+        ctaLabel: "Start Volunteering",
+      };
+  }
+}
+
+// ─── OTP Digit Box ─────────────────────────────────────────────────────────
+
+interface OtpBoxProps {
+  digit: string;
+  idx: number;
+  isFocused: boolean;
+  hasError: boolean;
+  isSuccess: boolean;
+  inputRef: (el: HTMLInputElement | null) => void;
+  onChange: (i: number, val: string) => void;
+  onKeyDown: (i: number, e: React.KeyboardEvent) => void;
+  onFocus: (i: number) => void;
+}
+
+function OtpBox({ digit, idx, isFocused, hasError, isSuccess, inputRef, onChange, onKeyDown, onFocus }: OtpBoxProps) {
+  return (
+    <motion.div
+      className="relative"
+      animate={hasError ? { x: [0, -8, 8, -6, 6, -3, 3, 0] } : { x: 0 }}
+      transition={hasError ? { duration: 0.45, ease: "easeInOut" } : {}}
+    >
+      {/* Success particle burst per digit */}
+      <AnimatePresence>
+        {isSuccess && digit && (
+          <>
+            {[...Array(4)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                initial={{ opacity: 1, scale: 0 }}
+                animate={{
+                  opacity: 0,
+                  scale: 1.8,
+                  x: Math.cos((i / 4) * Math.PI * 2) * 24,
+                  y: Math.sin((i / 4) * Math.PI * 2) * 24,
+                }}
+                transition={{ duration: 0.5, delay: idx * 0.06 + i * 0.04, ease: "easeOut" }}
+              >
+                <div className="w-2 h-2 rounded-full" style={{ background: "#D4AF37" }} />
+              </motion.div>
+            ))}
+          </>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        animate={{
+          scale: isSuccess && digit ? 1.12 : isFocused ? 1.06 : 1,
+          rotate: isSuccess && digit ? [0, -4, 4, 0] : 0,
+        }}
+        transition={{
+          scale: { type: "spring", stiffness: 400, damping: 18 },
+          rotate: { duration: 0.4, ease: "easeInOut" },
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="tel"
+          inputMode="numeric"
+          maxLength={1}
+          value={digit}
+          onChange={(e) => onChange(idx, e.target.value.replace(/\D/, ""))}
+          onKeyDown={(e) => onKeyDown(idx, e)}
+          onFocus={() => onFocus(idx)}
+          className="h-[64px] w-[64px] rounded-[22px] text-center text-[24px] font-black outline-none transition-all duration-200 select-none"
+          style={{
+            fontFamily: "var(--font-outfit)",
+            background: isSuccess && digit
+              ? "linear-gradient(135deg, #D4AF37, #F2D15A)"
+              : hasError
+              ? "rgba(255,107,107,0.10)"
+              : digit
+              ? "rgba(212,175,55,0.12)"
+              : "rgba(0,0,0,0.04)",
+            border: isSuccess && digit
+              ? "2px solid #D4AF37"
+              : hasError
+              ? "2px solid rgba(255,107,107,0.70)"
+              : isFocused
+              ? "2px solid var(--accent-gold)"
+              : digit
+              ? "2px solid rgba(212,175,55,0.50)"
+              : "2px solid rgba(0,0,0,0.08)",
+            color: isSuccess && digit ? "#1A1A1A" : "var(--text-primary)",
+            boxShadow: isFocused && !hasError
+              ? "0 0 0 4px rgba(212,175,55,0.18), 0 4px 16px rgba(212,175,55,0.15)"
+              : "0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────
 
 export function Otp() {
-  const setScreen = useAppStore((s) => s.setScreen);
-  const phoneNumber = useAppStore((s) => s.phoneNumber);
-  const isNewUser = useAppStore((s) => s.isNewUser);
+  const login = useAppStore((s) => s.login);
+  const setActiveScreen = useAppStore((s) => s.setActiveScreen);
+  const activePanel = useAppStore((s) => s.activePanel);
+  const subRole = useAppStore((s) => s.subRole);
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [step, setStep] = useState<"phone" | "otp">("phone");
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [error, setError] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [focusedIdx, setFocusedIdx] = useState<number>(-1);
   const [countdown, setCountdown] = useState(30);
-  const [success, setSuccess] = useState(false);
-  const [readingSms, setReadingSms] = useState(true);
+  const [otpSent, setOtpSent] = useState(false);
+
+  // "verified" = show celebration, "idle" = normal
+  const [verifiedState, setVerifiedState] = useState<"idle" | "verifying" | "verified">("idle");
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  const celebMode = getCelebrationMode(activePanel ?? "donor_shopkeeper", subRole ?? "donor");
+  const celebContent = getCelebrationContent(celebMode);
+
+  // Countdown timer
   useEffect(() => {
-    if (countdown > 0) {
+    if (step === "otp" && countdown > 0 && otpSent) {
       const id = setTimeout(() => setCountdown((c) => c - 1), 1000);
       return () => clearTimeout(id);
     }
-  }, [countdown]);
+  }, [countdown, step, otpSent]);
 
-  useEffect(() => {
-    inputRefs.current[0]?.focus();
-    
-    // Simulate Web OTP API reading
-    const smsTimer = setTimeout(() => {
-      setReadingSms(false);
-    }, 2500);
-    
-    return () => clearTimeout(smsTimer);
-  }, []);
+  const handleSendOtp = () => {
+    if (phoneNumber.length === 10) {
+      setStep("otp");
+      setCountdown(30);
+      setOtpSent(true);
+      // Focus first input
+      setTimeout(() => inputRefs.current[0]?.focus(), 200);
+    }
+  };
 
   const handleChange = (i: number, val: string) => {
-    if (!/^\d?$/.test(val)) return;
     const newOtp = [...otp];
     newOtp[i] = val;
     setOtp(newOtp);
-    setError(false);
-
+    setHasError(false);
     if (val && i < 3) {
       inputRefs.current[i + 1]?.focus();
     }
-
     if (newOtp.every((d) => d) && newOtp.join("").length === 4) {
-      setTimeout(() => handleVerify(newOtp.join("")), 400);
+      setTimeout(() => handleVerify(newOtp.join("")), 350);
     }
   };
 
@@ -57,233 +200,348 @@ export function Otp() {
   };
 
   const handleVerify = (code: string) => {
-    if (code.length === 4) {
-      setSuccess(true);
-      setTimeout(() => {
-        // Navigate based on whether the user is new
-        if (isNewUser) {
-          setScreen("role-select");
-        } else {
-          // If not new, send to their respective dashboard
-          const role = useAppStore.getState().role;
-          if (role === "ngo") setScreen("ngo-feed");
-          else if (role === "volunteer") setScreen("volunteer-map");
-          else setScreen("home");
-        }
-      }, 1500); // Wait for the expanding green circle animation
-    } else {
-      setError(true);
-    }
+    if (code.length !== 4) { setHasError(true); return; }
+
+    setVerifiedState("verifying");
+
+    // Brief "verifying" flash then show celebration
+    setTimeout(() => {
+      setVerifiedState("verified");
+      // Actual login happens when user clicks CTA in celebration
+    }, 800);
   };
 
-  const maskedPhone = phoneNumber
-    ? `+91 ${phoneNumber.slice(0, 5)} ${phoneNumber.slice(5)}`
-    : "+91 XXXXX XXXXX";
+  const handleCelebrationDone = () => {
+    login(phoneNumber || "9876543210");
+  };
 
   const allFilled = otp.every((d) => d);
+  const isPhoneValid = phoneNumber.length === 10;
+
+  // ── Full-screen celebration ──
+  if (verifiedState === "verified") {
+    return (
+      <CelebrationScreen
+        mode={celebMode}
+        title={celebContent.title}
+        subtitle={celebContent.subtitle}
+        points={celebContent.points}
+        ctaLabel={celebContent.ctaLabel}
+        onDone={handleCelebrationDone}
+      />
+    );
+  }
 
   return (
-    <div className="relative flex h-full flex-col bg-[#F7F5F0]">
+    <ScreenWrapper>
       {/* Back button */}
-      <button
-        onClick={() => setScreen("login")}
-        className="absolute left-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm"
+      <div className="absolute left-6 top-12 z-20">
+        <IconButton
+          icon={<ArrowLeft size={20} />}
+          onClick={() => step === "otp" ? setStep("phone") : setActiveScreen("roleSelect")}
+          variant="light"
+        />
+      </div>
+
+      {/* Bottom sheet */}
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        transition={springGentle}
+        className="absolute bottom-0 left-0 right-0 z-10 flex flex-col rounded-t-[36px] px-8 pb-12 pt-5 shadow-[0_-16px_48px_rgba(0,0,0,0.10)]"
+        style={{
+          background: "rgba(255,255,255,0.97)",
+          backdropFilter: "blur(24px)",
+          minHeight: "62vh",
+        }}
       >
-        <ArrowLeft size={20} className="text-[#0A0A0A]" />
-      </button>
+        {/* Drag handle */}
+        <div className="mx-auto mb-8 h-1.5 w-12 rounded-full bg-black/10" />
 
-      {/* Content */}
-      <div className="relative flex flex-1 flex-col px-8 pt-28">
-        
-        {/* Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-[30px] font-bold text-[#0A0A0A]"
-          style={{ fontFamily: "var(--font-outfit)" }}
-        >
-          Verify your number
-        </motion.h1>
-
-        {/* Subtitle with phone */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="mt-3 flex flex-col items-start gap-1"
-        >
-          <p className="text-[16px] font-medium text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-            Enter the 4-digit code sent to
-          </p>
-          <div className="flex items-center gap-3">
-            <p className="text-[17px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-              {maskedPhone}
-            </p>
-            <button
-              onClick={() => setScreen("login")}
-              className="text-[14px] font-semibold text-[#1A6B3C] underline"
-              style={{ fontFamily: "var(--font-jakarta)" }}
-            >
-              Change
-            </button>
-          </div>
-        </motion.div>
-
-        {/* OTP input grid */}
-        <div className="mt-12 flex justify-between gap-2">
-          {otp.map((digit, i) => (
-            <motion.input
-              key={i}
-              ref={(el) => { inputRefs.current[i] = el; }}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                x: error ? [0, -10, 10, -10, 10, 0] : 0,
-              }}
-              transition={{ delay: i * 0.05, duration: error ? 0.4 : 0.3 }}
-              type="tel"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(i, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              className="h-[72px] w-[72px] rounded-[20px] text-center text-[32px] font-bold text-[#0A0A0A] focus:outline-none transition-all duration-200"
-              style={{
-                fontFamily: "var(--font-outfit)",
-                border: `2px solid ${error ? "#EF4444" : digit ? "#1A6B3C" : "#E8E8E4"}`,
-                background: digit ? "#F0F7F2" : "#FFFFFF",
-                boxShadow: digit && !error
-                  ? "0 0 0 4px rgba(26,107,60,0.1)"
-                  : "0px 4px 12px rgba(0,0,0,0.03)",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Status / Error row */}
-        <div className="mt-6 flex h-6 items-center justify-center">
-          <AnimatePresence mode="wait">
-            {error ? (
-              <motion.p
-                key="error"
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="text-[14px] font-medium text-[#EF4444]"
-                style={{ fontFamily: "var(--font-jakarta)" }}
-              >
-                Invalid code. Please try again.
-              </motion.p>
-            ) : readingSms ? (
-              <motion.div
-                key="reading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2 text-[#8A8A8A]"
-              >
-                <ShieldCheck size={16} />
-                <span className="text-[13px] font-medium" style={{ fontFamily: "var(--font-jakarta)" }}>Reading SMS...</span>
-                <motion.div
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="h-1.5 w-1.5 rounded-full bg-[#1A6B3C]"
-                />
-              </motion.div>
-            ) : countdown > 0 ? (
-              <motion.p
-                key="countdown"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-[14px] text-[#8A8A8A]" 
-                style={{ fontFamily: "var(--font-jakarta)" }}
-              >
-                Resend OTP in <span className="font-bold text-[#0A0A0A]">0:{countdown.toString().padStart(2, "0")}</span>
-              </motion.p>
-            ) : (
-              <motion.button
-                key="resend"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={() => {
-                  setCountdown(30);
-                  setOtp(["", "", "", ""]);
-                  setError(false);
-                  inputRefs.current[0]?.focus();
-                }}
-                className="text-[14px] font-bold text-[#1A6B3C]"
-                style={{ fontFamily: "var(--font-jakarta)" }}
-              >
-                Resend OTP
-              </motion.button>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Verify button */}
-      <div className="px-8 pb-10">
-        <motion.button
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          whileTap={{ scale: allFilled ? 0.96 : 1 }}
-          onClick={() => handleVerify(otp.join(""))}
-          disabled={!allFilled}
-          className="relative flex h-[56px] w-full items-center justify-center rounded-full text-[17px] font-semibold transition-all duration-200 disabled:opacity-50 overflow-hidden"
-          style={{
-            background: allFilled ? "#1A6B3C" : "#E8E8E4",
-            color: allFilled ? "white" : "#8A8A8A",
-            fontFamily: "var(--font-outfit)",
-            boxShadow: allFilled ? "0px 8px 24px rgba(26,107,60,0.25)" : "none",
-          }}
-        >
-          <span className="relative z-10">Verify and Continue</span>
-          
-          {/* Expanding Green Circle Success Transition */}
-          <AnimatePresence>
-            {success && (
-              <motion.div
-                initial={{ scale: 0, opacity: 1 }}
-                animate={{ scale: 40, opacity: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="absolute left-1/2 top-1/2 z-0 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1A6B3C]"
-              />
-            )}
-          </AnimatePresence>
-        </motion.button>
-      </div>
-      
-      {/* Success full screen overlay overlay to maintain state during transition */}
-      <AnimatePresence>
-        {success && (
+        {/* Logo */}
+        <div className="flex items-center gap-2 mb-7 text-[#7CA13B]">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1A6B3C]"
+            animate={{ rotate: [0, -10, 10, -5, 5, 0] }}
+            transition={{ delay: 0.5, duration: 0.8 }}
           >
-             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 14, delay: 0.2 }}
-              className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20"
-            >
-              <CheckCircle2 size={40} className="text-white" />
-            </motion.div>
-            <motion.h2
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-6 text-[22px] font-bold text-white"
-              style={{ fontFamily: "var(--font-outfit)" }}
-            >
-              Verified Successfully!
-            </motion.h2>
+            <Leaf size={24} />
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+          <span className="font-outfit font-black text-[20px] text-[#1A1A1A]">ZeroWaste</span>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {/* ── Phone Step ── */}
+          {step === "phone" && (
+            <motion.div
+              key="phone"
+              initial={{ opacity: 0, x: -28, scale: 0.97 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -28, scale: 0.97 }}
+              transition={springBouncy}
+              className="flex flex-col flex-1"
+            >
+              <motion.h2
+                initial={{ y: 12, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ ...springGentle, delay: 0.05 }}
+                className="font-outfit font-black text-[28px] text-[#1A1A1A] leading-tight mb-2"
+              >
+                Enter your number
+              </motion.h2>
+              <motion.p
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ ...springGentle, delay: 0.1 }}
+                className="font-jakarta text-[15px] text-text-secondary mb-8"
+              >
+                We'll send a verification code via SMS
+              </motion.p>
+
+              <motion.div
+                initial={{ y: 12, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ ...springBouncy, delay: 0.15 }}
+                className="flex items-center rounded-full border-2 px-5 py-4 transition-all duration-300"
+                style={{
+                  background: isPhoneValid ? "rgba(212,175,55,0.07)" : "rgba(0,0,0,0.04)",
+                  borderColor: isPhoneValid ? "#D4AF37" : "rgba(0,0,0,0.10)",
+                  boxShadow: isPhoneValid
+                    ? "0 0 0 4px rgba(212,175,55,0.14), 0 4px 20px rgba(212,175,55,0.12)"
+                    : "0 2px 8px rgba(0,0,0,0.05)",
+                }}
+              >
+                {/* Country code badge */}
+                <div className="flex items-center gap-2 mr-3 shrink-0">
+                  <span className="text-[11px] bg-[#1A1A1A] text-white px-2 py-1 rounded-lg font-jakarta font-bold tracking-wide">IN</span>
+                  <span className="font-outfit text-[17px] font-black text-[#1A1A1A]">+91</span>
+                </div>
+                <div className="h-5 w-px bg-black/12 mr-3 shrink-0" />
+                <input
+                  type="tel"
+                  maxLength={10}
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                  placeholder="9876543210"
+                  className="flex-1 bg-transparent font-outfit text-[18px] font-bold text-[#1A1A1A] outline-none placeholder:text-[#C8C8C8] tracking-widest"
+                  autoFocus
+                />
+                {/* Animated tick */}
+                <AnimatePresence>
+                  {isPhoneValid && (
+                    <motion.div
+                      initial={{ scale: 0, rotate: -90, opacity: 0 }}
+                      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                      exit={{ scale: 0, rotate: 90, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 520, damping: 22 }}
+                      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 ml-1"
+                      style={{
+                        background: "linear-gradient(135deg, #F2D15A, #D4AF37)",
+                        boxShadow: "0 4px 14px rgba(212,175,55,0.45), inset 0 1px 0 rgba(255,255,255,0.40)",
+                      }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <motion.path
+                          d="M3 8L6.5 11.5L13 4.5"
+                          stroke="white"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ duration: 0.35, ease: "easeOut", delay: 0.1 }}
+                        />
+                      </svg>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              <div className="mt-auto pt-8">
+                <motion.button
+                  onClick={handleSendOtp}
+                  disabled={!isPhoneValid}
+                  whileTap={isPhoneValid ? { scale: 0.96 } : {}}
+                  whileHover={isPhoneValid ? { scale: 1.02 } : {}}
+                  className="w-full h-[58px] rounded-full font-outfit font-black text-[17px] flex items-center justify-center gap-2.5 transition-all duration-300"
+                  style={{
+                    background: isPhoneValid
+                      ? "linear-gradient(135deg, #F2D15A 0%, #D4AF37 100%)"
+                      : "rgba(0,0,0,0.08)",
+                    color: isPhoneValid ? "#1A1A1A" : "rgba(0,0,0,0.30)",
+                    boxShadow: isPhoneValid
+                      ? "0 8px 28px rgba(212,175,55,0.40), 0 2px 8px rgba(212,175,55,0.25)"
+                      : "none",
+                    cursor: isPhoneValid ? "pointer" : "not-allowed",
+                  }}
+                >
+                  <Send size={18} />
+                  Send OTP
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── OTP Step ── */}
+          {step === "otp" && (
+            <motion.div
+              key="otp"
+              initial={{ opacity: 0, x: 28, scale: 0.97 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 28, scale: 0.97 }}
+              transition={springBouncy}
+              className="flex flex-col flex-1"
+            >
+              <motion.h2
+                initial={{ y: 12, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ ...springGentle, delay: 0.05 }}
+                className="font-outfit font-black text-[28px] text-[#1A1A1A] leading-tight mb-2"
+              >
+                Enter OTP
+              </motion.h2>
+              <motion.p
+                initial={{ y: 8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ ...springGentle, delay: 0.1 }}
+                className="font-jakarta text-[15px] text-text-secondary mb-8"
+              >
+                Sent to <span className="font-bold text-[#1A1A1A]">+91 {phoneNumber.slice(0, 5)} {phoneNumber.slice(5)}</span>
+              </motion.p>
+
+              {/* OTP Boxes */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ ...springBouncy, delay: 0.15 }}
+                className="flex justify-between gap-2 mb-6"
+              >
+                {otp.map((digit, i) => (
+                  <OtpBox
+                    key={i}
+                    digit={digit}
+                    idx={i}
+                    isFocused={focusedIdx === i}
+                    hasError={hasError}
+                    isSuccess={verifiedState === "verifying"}
+                    inputRef={(el) => { inputRefs.current[i] = el; }}
+                    onChange={handleChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={setFocusedIdx}
+                  />
+                ))}
+              </motion.div>
+
+              {/* Error message */}
+              <AnimatePresence>
+                {hasError && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    transition={springBouncy}
+                    className="text-center font-jakarta text-[13px] text-[#FF6B6B] font-semibold mb-3"
+                  >
+                    ❌ Incorrect code — try again
+                  </motion.p>
+                )}
+              </AnimatePresence>
+
+              {/* Verifying pulse */}
+              <AnimatePresence>
+                {verifiedState === "verifying" && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-center gap-2 mb-3"
+                  >
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="w-2.5 h-2.5 rounded-full bg-[#D4AF37]"
+                        animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 0.7, delay: i * 0.18, repeat: Infinity }}
+                      />
+                    ))}
+                    <span className="font-jakarta text-[13px] text-[#D4AF37] font-bold ml-1">Verifying...</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Countdown / Resend */}
+              <div className="flex justify-center mb-8">
+                {countdown > 0 ? (
+                  <p className="font-jakarta text-[14px] text-text-secondary">
+                    Resend in{" "}
+                    <motion.span
+                      key={countdown}
+                      initial={{ scale: 1.3, color: "#D4AF37" }}
+                      animate={{ scale: 1, color: "#1A1A1A" }}
+                      className="font-black inline-block"
+                    >
+                      00:{countdown.toString().padStart(2, "0")}
+                    </motion.span>
+                  </p>
+                ) : (
+                  <motion.button
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={springBouncy}
+                    whileTap={{ scale: 0.94 }}
+                    onClick={() => {
+                      setCountdown(30);
+                      setOtp(["", "", "", ""]);
+                      setHasError(false);
+                      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+                    }}
+                    className="font-jakarta text-[14px] font-bold text-[#D4AF37] underline underline-offset-2"
+                  >
+                    Resend OTP ↺
+                  </motion.button>
+                )}
+              </div>
+
+              <div className="mt-auto">
+                <motion.button
+                  onClick={() => handleVerify(otp.join(""))}
+                  disabled={!allFilled || verifiedState === "verifying"}
+                  whileTap={allFilled ? { scale: 0.96 } : {}}
+                  whileHover={allFilled ? { scale: 1.02 } : {}}
+                  className="w-full h-[58px] rounded-full font-outfit font-black text-[17px] flex items-center justify-center gap-2.5 transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    background: allFilled && verifiedState !== "verifying"
+                      ? "linear-gradient(135deg, #F2D15A 0%, #D4AF37 100%)"
+                      : "rgba(0,0,0,0.08)",
+                    color: allFilled && verifiedState !== "verifying" ? "#1A1A1A" : "rgba(0,0,0,0.30)",
+                    boxShadow: allFilled && verifiedState !== "verifying"
+                      ? "0 8px 28px rgba(212,175,55,0.40), 0 2px 8px rgba(212,175,55,0.25)"
+                      : "none",
+                    cursor: allFilled ? "pointer" : "not-allowed",
+                  }}
+                >
+                  {verifiedState === "verifying" ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 0.7, ease: "linear" }}
+                        className="inline-block w-5 h-5 border-2 border-[#D4AF37] border-t-transparent rounded-full"
+                      />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <path d="M3.5 9.5L7.5 13.5L14.5 5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Verify &amp; Continue
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </ScreenWrapper>
   );
 }

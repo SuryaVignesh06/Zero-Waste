@@ -1,32 +1,243 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Zero-Waste V3 — Prisma Schema (PostgreSQL / Supabase)
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
+// ── Users ──────────────────────────────────────────────────
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  phone       String   @unique
+  name        String?
+  role        String   // "provider" | "ngo" | "recipient" | "volunteer"
+  loginPath   String?  // "provider" | "ngo" | "recipient" | "volunteer"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  providerProfile  ProviderProfile?
+  ngoProfile       NgoProfile?
+  recipientProfile RecipientProfile?
+  volunteerProfile VolunteerProfile?
+  listings         Listing[]
+  reservations     Reservation[]
+  foodRequests     FoodRequest[]
+  pickups          Pickup[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+// ── Provider ───────────────────────────────────────────────
+model ProviderProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  type             String   @default("individual") // individual | restaurant | shop | bakery | marriage_hall | hostel | event
+  displayName      String
+  phone            String?
+  address          String?
+  lat              Float?
+  lng              Float?
+  isShop           Boolean  @default(false)
+  shopHoursOpen    String?
+  shopHoursClose   String?
+  totalDonations   Int      @default(0)
+  totalSales       Int      @default(0)
+  impactPoints     Int      @default(0)
+  revenueRecovered Float    @default(0)
+  createdAt        DateTime @default(now())
+}
+
+// ── Listing (unified Donate + Sell) ───────────────────────
+model Listing {
+  id            String   @id @default(cuid())
+  providerId    String
+  provider      User     @relation(fields: [providerId], references: [id])
+  providerName  String
+  providerType  String   @default("individual")
+  address       String?
+  lat           Float?
+  lng           Float?
+
+  mode          String   // "donate" | "sell"
+  name          String
+  category      String
+  photos        String[] // array of URLs
+
+  // Donation
+  servings      Int?
+  condition     String?  // freshly_cooked | good_condition | needs_quick_pickup
+
+  // Sale
+  mrp           Float?
+  discountPrice Float?
+  discountPercent Int?
+  stock         Int?
+
+  expiryDate       DateTime
+  daysLeft         Int
+  urgencyLevel     String   @default("fresh")
+  availableFrom    DateTime
+  availableUntil   DateTime
+  specialInstructions String @default("")
+
+  status                 String   @default("active")
+  acceptedByReceiverId   String?
+  acceptedByReceiverName String?
+  acceptedByReceiverType String?
+  assignedVolunteerId    String?
+  proofImages            String[]
+  beneficiaryCount       Int?
+  distributionStory      String?
+  reservedByUserId       String?
+  reservationExpiresAt   DateTime?
+
+  views     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  reservations Reservation[]
+  foodRequests FoodRequest[]
+  pickups      Pickup[]
+}
+
+// ── NGO ───────────────────────────────────────────────────
+model NgoProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id])
+  orgName               String
+  registrationNumber    String?
+  contactPerson         String
+  phone                 String?
+  address               String?
+  lat                   Float?
+  lng                   Float?
+  serviceRadius         Int      @default(10)
+  capacity              Int      @default(100)
+  verified              Boolean  @default(false)
+  verifiedAt            DateTime?
+  totalMealsReceived    Int      @default(0)
+  totalBeneficiaries    Int      @default(0)
+  proofUploadRate       Float    @default(0)
+  createdAt             DateTime @default(now())
+}
+
+// ── Recipient ─────────────────────────────────────────────
+model RecipientProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  displayName   String
+  phone         String?
+  address       String?
+  lat           Float?
+  lng           Float?
+  householdSize Int      @default(1)
+  dietaryNeeds  String[] @default([])
+  createdAt     DateTime @default(now())
+}
+
+// ── Volunteer ─────────────────────────────────────────────
+model VolunteerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  displayName String
+  phone       String?
+  vehicleType String   @default("motorbike") // walking | bicycle | motorbike | car
+  zoneRadius  Int      @default(5)
+  isOnline    Boolean  @default(false)
+  totalPoints Int      @default(0)
+  totalRescues Int     @default(0)
+  totalMeals  Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+// ── Reservation ───────────────────────────────────────────
+model Reservation {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  userType       String   // ngo | recipient
+  listingId      String
+  listing        Listing  @relation(fields: [listingId], references: [id])
+  productName    String
+  providerName   String
+  providerAddress String?
+  providerPhone  String?
+  discountPrice  Float
+  mrp            Float
+  reservedAt     DateTime @default(now())
+  expiresAt      DateTime
+  status         String   @default("active") // active | collected | expired | cancelled
+  qrCode         String   @unique
+  createdAt      DateTime @default(now())
+}
+
+// ── Food Request ──────────────────────────────────────────
+model FoodRequest {
+  id                  String   @id @default(cuid())
+  receiverId          String
+  receiver            User     @relation(fields: [receiverId], references: [id])
+  receiverType        String   // ngo | recipient
+  receiverName        String
+  address             String?
+  lat                 Float?
+  lng                 Float?
+  servingsNeeded      Int
+  urgency             String   @default("flexible") // flexible | today | urgent
+  dietaryNotes        String   @default("")
+  specialInstructions String   @default("")
+  status              String   @default("open") // open | matched | fulfilled | expired
+  matchedListingId    String?
+  matchedListing      Listing? @relation(fields: [matchedListingId], references: [id])
+  matchedProviderId   String?
+  createdAt           DateTime @default(now())
+  expiresAt           DateTime
+}
+
+// ── Pickup ────────────────────────────────────────────────
+model Pickup {
+  id               String   @id @default(cuid())
+  volunteerId      String
+  volunteer        User     @relation(fields: [volunteerId], references: [id])
+  listingId        String
+  listing          Listing  @relation(fields: [listingId], references: [id])
+  providerId       String
+  providerName     String
+  providerAddress  String
+  receiverId       String
+  receiverName     String
+  receiverAddress  String
+  foodName         String
+  servings         Int?
+  status           String   @default("assigned")
+  pointsEarned     Int      @default(0)
+  proofImages      String[]
+  proofVerified    Boolean  @default(false)
+  completedAt      DateTime?
+  createdAt        DateTime @default(now())
+}
+
+// ── Impact Story ──────────────────────────────────────────
+model ImpactStory {
+  id                      String   @id @default(cuid())
+  listingId               String?
+  ngoId                   String
+  volunteerId             String?
+  imageUrl                String?
+  images                  String[]
+  beneficiaryCount        Int
+  distributionDescription String
+  distributionStory       String?
+  gpsLat                  Float?
+  gpsLng                  Float?
+  verificationStatus      String   @default("pending")
+  verifiedAt              DateTime?
+  createdAt               DateTime @default(now())
+  viewedByDonor           Boolean  @default(false)
 }

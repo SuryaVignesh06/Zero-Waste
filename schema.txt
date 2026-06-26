@@ -1,0 +1,322 @@
+
+# ============================================================
+# ZERO-WASTE V3 — DATABASE SCHEMA DESCRIPTION
+# For Firebase Data Connect / Google AI Schema Generation
+# App: Mobile-first food waste reduction platform (India)
+# ============================================================
+# Paste this into Firebase Data Connect AI schema generator
+# or Google AI Studio to generate the .gql schema file
+# ============================================================
+
+## APP OVERVIEW
+Zero-Waste is a mobile web app that connects food providers (donors/shopkeepers),
+receivers (NGOs/individuals), and volunteers to reduce food waste.
+The app has THREE panels:
+  1. PROVIDER panel — donates or sells surplus food at discount
+  2. RECEIVER panel — NGOs and individual recipients find/request food
+  3. VOLUNTEER panel — picks up food from providers, delivers to receivers
+
+## COLLECTIONS / TABLES
+
+---
+
+### 1. users
+Stores all authenticated users regardless of role.
+Fields:
+  - id: String (primary key, UUID)
+  - phone: String (unique, required) — Indian phone number used for OTP auth
+  - name: String (optional)
+  - role: String (required) — one of: "provider", "ngo", "recipient", "volunteer"
+  - loginPath: String (optional) — same as role, set at login
+  - avatarUrl: String (optional)
+  - createdAt: Timestamp
+  - updatedAt: Timestamp
+
+---
+
+### 2. provider_profiles
+One-to-one with users where role = "provider".
+Represents household donors, restaurants, bakeries, marriage halls, shops.
+Fields:
+  - id: String (primary key, UUID)
+  - userId: String (foreign key → users.id, unique)
+  - type: String — one of: "individual", "restaurant", "shop", "bakery", "marriage_hall", "hostel", "event"
+  - displayName: String (required)
+  - phone: String
+  - address: String
+  - lat: Float
+  - lng: Float
+  - isShop: Boolean (default: false) — true if commercial setup with shop hours
+  - shopHoursOpen: String (e.g. "09:00")
+  - shopHoursClose: String (e.g. "21:00")
+  - shopDays: Array<String> (e.g. ["Mon","Tue","Wed","Thu","Fri","Sat"])
+  - totalDonations: Integer (default: 0) — count of free donations
+  - totalSales: Integer (default: 0) — count of discounted sales
+  - impactPoints: Integer (default: 0) — gamification points
+  - revenueRecovered: Float (default: 0) — total INR earned from discount sales
+  - createdAt: Timestamp
+
+---
+
+### 3. listings
+The CORE table. A single listing can be a FREE DONATION or a DISCOUNTED SALE.
+Providers create listings. Receivers browse and interact with them.
+Fields:
+  - id: String (primary key, UUID)
+  - providerId: String (foreign key → users.id, required)
+  - providerName: String (denormalized for fast display)
+  - providerType: String (denormalized — individual/restaurant/etc.)
+  - address: String (pickup/collection address)
+  - lat: Float
+  - lng: Float
+  - mode: String (required) — "donate" or "sell"
+  - name: String (required) — food item name, e.g. "Biryani" or "Brown Bread 400g"
+  - category: String — one of: "Cooked Meal", "Vegetables", "Bakery", "Dairy", "Packaged", "Fruits", "Beverages", "Snacks", "Other"
+  - photos: Array<String> (URLs of uploaded photos)
+
+  // Donation-only fields (when mode = "donate"):
+  - servings: Integer — estimated number of meals/servings
+  - condition: String — one of: "freshly_cooked", "good_condition", "needs_quick_pickup"
+
+  // Sale-only fields (when mode = "sell"):
+  - mrp: Float — Maximum Retail Price in INR
+  - discountPrice: Float — selling price after discount
+  - discountPercent: Integer — e.g. 70 means 70% discount
+  - stock: Integer — units available
+
+  // Common scheduling fields:
+  - expiryDate: Timestamp (required) — when food expires / best before date
+  - daysLeft: Integer — auto-calculated days until expiry
+  - urgencyLevel: String — one of: "fresh" (30+ days), "attention" (20 days), "high" (10 days), "urgent" (5 days), "critical" (2 days)
+  - availableFrom: Timestamp — when pickup becomes available
+  - availableUntil: Timestamp — last time for pickup
+  - specialInstructions: String (default: "")
+
+  // Status tracking:
+  - status: String — one of: "active", "reserved", "accepted", "picked_up", "delivered", "completed", "expired", "paused", "sold_out"
+
+  // Donation acceptance (set when NGO or recipient claims it):
+  - acceptedByReceiverId: String (foreign key → users.id, optional)
+  - acceptedByReceiverName: String (optional, denormalized)
+  - acceptedByReceiverType: String (optional) — "ngo" or "recipient"
+  - assignedVolunteerId: String (foreign key → users.id, optional)
+
+  // After delivery proof:
+  - proofImages: Array<String> (URLs)
+  - beneficiaryCount: Integer
+  - distributionStory: String
+
+  // Sale reservation:
+  - reservedByUserId: String (foreign key → users.id, optional)
+  - reservationExpiresAt: Timestamp (optional, 30 min window)
+
+  - views: Integer (default: 0)
+  - createdAt: Timestamp
+  - updatedAt: Timestamp
+
+---
+
+### 4. ngo_profiles
+One-to-one with users where role = "ngo".
+Fields:
+  - id: String (primary key, UUID)
+  - userId: String (foreign key → users.id, unique)
+  - orgName: String (required) — organization name
+  - registrationNumber: String (optional) — NGO registration / 80G number
+  - contactPerson: String (required)
+  - phone: String
+  - address: String
+  - lat: Float
+  - lng: Float
+  - serviceRadius: Integer (default: 10) — km radius they serve
+  - dailyCapacity: Integer (default: 100) — max meals they can handle per day
+  - verified: Boolean (default: false) — set to true after document verification
+  - verifiedAt: Timestamp (optional)
+  - totalMealsReceived: Integer (default: 0)
+  - totalBeneficiariesServed: Integer (default: 0)
+  - proofUploadRate: Float (default: 0) — percentage of pickups with proof uploaded
+  - createdAt: Timestamp
+
+---
+
+### 5. recipient_profiles
+One-to-one with users where role = "recipient".
+Recipient data is PRIVATE — only visible to verified NGOs and admins.
+Fields:
+  - id: String (primary key, UUID)
+  - userId: String (foreign key → users.id, unique)
+  - displayName: String (first name only for privacy)
+  - phone: String
+  - address: String
+  - lat: Float
+  - lng: Float
+  - householdSize: Integer (default: 1) — number of people in household
+  - dietaryNeeds: Array<String> — e.g. ["vegetarian", "diabetic-friendly"]
+  - createdAt: Timestamp
+
+---
+
+### 6. volunteer_profiles
+One-to-one with users where role = "volunteer".
+Fields:
+  - id: String (primary key, UUID)
+  - userId: String (foreign key → users.id, unique)
+  - displayName: String (required)
+  - phone: String
+  - vehicleType: String — one of: "walking", "bicycle", "motorbike", "car"
+  - zoneRadius: Integer (default: 5) — km radius they cover
+  - isOnline: Boolean (default: false) — real-time availability toggle
+  - totalPoints: Integer (default: 0) — gamification points
+  - totalRescues: Integer (default: 0) — total completed pickups
+  - totalMeals: Integer (default: 0) — total meals delivered
+  - createdAt: Timestamp
+
+---
+
+### 7. reservations
+Created when a receiver (NGO or recipient) reserves a SALE listing (mode="sell").
+Has a 30-minute expiry countdown. QR code used for in-store verification.
+Fields:
+  - id: String (primary key, UUID)
+  - userId: String (foreign key → users.id) — the receiver who reserved
+  - userType: String — "ngo" or "recipient"
+  - listingId: String (foreign key → listings.id)
+  - productName: String (denormalized)
+  - providerName: String (denormalized)
+  - providerAddress: String (denormalized)
+  - providerPhone: String (optional, denormalized)
+  - discountPrice: Float
+  - mrp: Float
+  - reservedAt: Timestamp
+  - expiresAt: Timestamp (reservedAt + 30 minutes)
+  - status: String — one of: "active", "collected", "expired", "cancelled"
+  - qrCode: String (unique) — format: "ZW-{listingId}-{userId}-{timestamp}"
+  - createdAt: Timestamp
+
+---
+
+### 8. food_requests
+Created when a receiver actively posts a food requirement.
+Providers and system match available listings to open requests.
+Fields:
+  - id: String (primary key, UUID)
+  - receiverId: String (foreign key → users.id)
+  - receiverType: String — "ngo" or "recipient"
+  - receiverName: String (denormalized)
+  - address: String
+  - lat: Float
+  - lng: Float
+  - servingsNeeded: Integer (required)
+  - urgency: String — one of: "flexible", "today", "urgent"
+  - dietaryNotes: String (default: "")
+  - specialInstructions: String (default: "")
+  - status: String — one of: "open", "matched", "fulfilled", "expired"
+  - matchedListingId: String (optional, foreign key → listings.id)
+  - matchedProviderId: String (optional, foreign key → users.id)
+  - createdAt: Timestamp
+  - expiresAt: Timestamp (default: 24 hours from createdAt)
+
+---
+
+### 9. pickups
+Created when a volunteer accepts a pickup task.
+Tracks the movement of food from provider to receiver.
+Fields:
+  - id: String (primary key, UUID)
+  - volunteerId: String (foreign key → users.id)
+  - listingId: String (foreign key → listings.id)
+  - providerId: String (foreign key → users.id)
+  - providerName: String (denormalized)
+  - providerAddress: String (denormalized)
+  - providerLat: Float
+  - providerLng: Float
+  - receiverId: String (foreign key → users.id)
+  - receiverName: String (denormalized)
+  - receiverAddress: String (denormalized)
+  - receiverLat: Float
+  - receiverLng: Float
+  - foodName: String (denormalized)
+  - servings: Integer
+  - distanceKm: Float
+  - status: String — one of: "assigned", "heading_to_provider", "food_collected", "delivering", "completed"
+  - volunteerPointsBase: Integer (default: 60) — points for completing delivery
+  - volunteerPointsBonus: Integer (default: 60) — bonus points if NGO uploads proof
+  - proofImages: Array<String>
+  - proofVerified: Boolean (default: false)
+  - completedAt: Timestamp (optional)
+  - createdAt: Timestamp
+
+---
+
+### 10. impact_stories
+Created by NGOs after receiving a food donation.
+Serves as accountability proof AND social impact showcase.
+Links the full chain: provider → volunteer → NGO → beneficiaries.
+Fields:
+  - id: String (primary key, UUID)
+  - listingId: String (foreign key → listings.id, optional)
+  - ngoId: String (foreign key → users.id)
+  - ngoName: String (denormalized)
+  - volunteerId: String (optional, foreign key → users.id)
+  - providerId: String (optional, foreign key → users.id) — to notify them
+  - images: Array<String> (minimum 2 photos required for verification)
+  - beneficiaryCount: Integer (required)
+  - distributionDescription: String (required) — how food was distributed
+  - distributionStory: String (optional) — narrative story for impact gallery
+  - gpsLat: Float (captured automatically on upload)
+  - gpsLng: Float (captured automatically on upload)
+  - verificationStatus: String — "pending" or "verified"
+  - verifiedAt: Timestamp (optional)
+  - viewedByProvider: Boolean (default: false) — provider notified of story
+  - createdAt: Timestamp
+
+---
+
+## RELATIONSHIPS SUMMARY
+
+users → provider_profiles (1:1)
+users → ngo_profiles (1:1)
+users → recipient_profiles (1:1)
+users → volunteer_profiles (1:1)
+users → listings (1:many, as provider)
+users → reservations (1:many, as reserver)
+users → food_requests (1:many, as requester)
+users → pickups (1:many, as volunteer)
+listings → reservations (1:many)
+listings → food_requests (1:many)
+listings → pickups (1:many)
+listings → impact_stories (1:1)
+
+---
+
+## INDEXES NEEDED
+
+listings: (lat, lng) — for geospatial queries nearby
+listings: (status, mode) — for filtering active donations vs sales
+listings: (providerId, status) — for provider dashboard
+listings: (urgencyLevel, expiryDate) — for sorting urgent items
+reservations: (userId, status) — for receiver's active reservations
+reservations: (listingId, status) — for provider inbox
+food_requests: (status, receiverType) — for matching
+pickups: (volunteerId, status) — for volunteer's active task
+pickups: (status) — for admin monitoring
+
+---
+
+## GAMIFICATION RULES (for reference)
+
+Provider earns +50 Impact Points when donation is picked up by volunteer.
+Volunteer earns +60 base points when delivery completed.
+Volunteer earns +60 bonus points when NGO uploads distribution proof.
+NGO earns recognition points based on proofUploadRate.
+Levels: Rescue Starter (0-200) → Rescue Helper (201-500) → Rescue Champion (501-1000) → Rescue Legend (1001+)
+
+---
+
+## URGENCY CALCULATION RULES
+
+daysLeft > 30 → urgencyLevel = "fresh"   → color #22C55E
+daysLeft 21-30 → urgencyLevel = "attention" → color #D97706
+daysLeft 11-20 → urgencyLevel = "high"   → color #EA580C
+daysLeft 3-10  → urgencyLevel = "urgent" → color #DC2626
+daysLeft 0-2   → urgencyLevel = "critical" → color #DC2626 (pulsing)

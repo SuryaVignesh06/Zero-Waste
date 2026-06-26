@@ -40,12 +40,6 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${outfit.variable} ${jakarta.variable} antialiased`}
-        style={{
-          background: "#F7F5F0",
-          color: "#0A0A0A",
-          fontFamily: 'var(--font-outfit), -apple-system, BlinkMacSystemFont, sans-serif',
-          margin: 0, padding: 0, height: "100%", overflow: "hidden",
-        }}
       >
         {children}
         <Toaster />

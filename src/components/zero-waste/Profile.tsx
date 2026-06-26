@@ -76,11 +76,7 @@ export function Profile() {
                     <motion.div 
                       key={d.id} 
                       variants={cardVariants}
-                      onClick={() => {
-                        setActiveDonationId(d.id);
-                        setScreen("donation-tracking");
-                      }}
-                      className="flex items-center gap-3 rounded-[16px] bg-white p-4 shadow-[0px_2px_16px_rgba(0,0,0,0.06)] active:scale-98 transition-transform cursor-pointer"
+                      className="flex items-center gap-3 rounded-[16px] bg-white p-4 shadow-[0px_2px_16px_rgba(0,0,0,0.06)] active:scale-98 transition-transform"
                     >
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#1A6B3C] to-[#22C55E]">
                         <Leaf size={22} className="text-white" />
@@ -111,6 +107,48 @@ export function Profile() {
                   ))}
                 </motion.div>
               )}
+            </motion.div>
+          )}
+          {/* NGO Section */}
+          {role === "ngo" && (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="space-y-4">
+              {/* Document Upload */}
+              <div className="rounded-[16px] bg-white p-4 shadow-sm border border-[#E8E8E4]">
+                <h3 className="text-[16px] font-bold text-[#0A0A0A] mb-2" style={{ fontFamily: "var(--font-outfit)" }}>Verification Documents</h3>
+                <div className="flex items-center justify-between rounded-[12px] bg-[#F5F5F7] p-3 border border-dashed border-[#AEAEB2]">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-white text-[#1A6B3C]">
+                      <Shield size={20} />
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-semibold text-[#0A0A0A]" style={{ fontFamily: "var(--font-jakarta)" }}>NGO Certificate 80G</div>
+                      <div className="text-[11px] text-[#8A8A8A]">Tap to upload</div>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-[#8A8A8A]" />
+                </div>
+              </div>
+
+              {/* Volunteer List */}
+              <div className="rounded-[16px] bg-white p-4 shadow-sm border border-[#E8E8E4]">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-[16px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>Active Volunteers</h3>
+                  <button className="text-[13px] font-medium text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>Invite</button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-[#F5F5F7] last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-[#E8E8E4] overflow-hidden">
+                          <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="avatar" />
+                        </div>
+                        <span className="text-[14px] font-medium text-[#0A0A0A]" style={{ fontFamily: "var(--font-jakarta)" }}>Volunteer {i}</span>
+                      </div>
+                      <span className="text-[11px] font-semibold text-[#1A6B3C] bg-[#F0F7F2] px-2 py-1 rounded-full">Available</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
 

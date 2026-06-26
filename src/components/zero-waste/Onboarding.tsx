@@ -36,7 +36,7 @@ const SLIDES = [
 ];
 
 export function Onboarding() {
-  const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const setScreen = useAppStore((s) => s.setScreen);
   const [index, setIndex] = useState(0);
 
   const slide = SLIDES[index];
@@ -44,7 +44,7 @@ export function Onboarding() {
 
   const nextSlide = () => {
     if (isLast) {
-      completeOnboarding();
+      setScreen("roleSelect");
     } else {
       setIndex((i) => i + 1);
     }
@@ -81,7 +81,7 @@ export function Onboarding() {
         <div className="flex justify-end">
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={completeOnboarding}
+            onClick={() => setScreen("roleSelect")}
             className="rounded-full bg-white/50 px-4 py-2 text-[14px] font-bold text-[var(--color-zw-ink)] shadow-sm backdrop-blur-md"
             style={{ fontFamily: "var(--font-jakarta)" }}
           >

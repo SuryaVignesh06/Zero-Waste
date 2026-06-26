@@ -1,190 +1,436 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/lib/store";
-import { User, Building2, Bike, HeartHandshake, CheckCircle2, Store } from "lucide-react";
+import { CheckCircle2, ArrowLeft, Leaf, Utensils, Building2, Bike, Store } from "lucide-react";
+import type { PanelRole, SubRole } from "@/lib/types";
 
-const ROLES = [
-  {
-    id: "user" as const,
-    title: "Donor",
-    desc: "Donate food and buy groceries.",
-    bg: "#C8E8D0",
-    iconBg: "#1A6B3C",
-    accent: "#1A6B3C",
-    icon: User,
-  },
-  {
-    id: "ngo" as const,
-    title: "NGO",
-    desc: "Receive bulk donations, track distributions, manage volunteers.",
-    bg: "#C8D8F0",
-    iconBg: "#1E3A8A",
-    accent: "#1E3A8A",
-    icon: Building2,
-  },
-  {
-    id: "recipient" as const,
-    title: "Recipient",
-    desc: "Request food and buy affordable groceries directly.",
-    bg: "#F5D0FE",
-    iconBg: "#86198F",
-    accent: "#86198F",
-    icon: HeartHandshake,
-  },
-  {
-    id: "volunteer" as const,
-    title: "Volunteer",
-    desc: "Pick up food and deliver it to NGOs.",
-    bg: "#F5E6C8",
-    iconBg: "#D97706",
-    accent: "#D97706",
-    icon: Bike,
-  },
-  {
-    id: "shopkeeper" as const,
-    title: "Shopkeeper",
-    desc: "List near-expiry products and manage discounts.",
-    bg: "#FEF3C7",
-    iconBg: "#F59E0B",
-    accent: "#F59E0B",
-    icon: Store,
-  },
-];
+import { ScreenWrapper } from "../ui/ScreenWrapper";
+import { PrimaryButton } from "../ui/Buttons/PrimaryButton";
+import { IconButton } from "../ui/Buttons/IconButton";
+import { LightCard } from "../ui/Cards/LightCard";
+import { springGentle, staggerChildren, fadeInUp } from "@/lib/animations";
+import { GlassSurface } from "../ui/GlassSurface";
 
 export function RoleSelect() {
-  const setRole = useAppStore((s) => s.setRole);
-  const setScreen = useAppStore((s) => s.setScreen);
-  const [selectedRole, setSelectedRole] = useState<"user" | "ngo" | "volunteer" | "recipient" | "shopkeeper" | null>(null);
+  const setActivePanel = useAppStore((s) => s.setActivePanel);
+  const setSubRole = useAppStore((s) => s.setSubRole);
+  const setActiveScreen = useAppStore((s) => s.setActiveScreen);
 
-  const handleContinue = () => {
-    if (!selectedRole) return;
-    setRole(selectedRole);
-    // Navigate to the specific setup flow based on role
-    if (selectedRole === "ngo") {
-      setScreen("ngo-auth-choice" as any);
-    } else if (selectedRole === "volunteer") {
-      setScreen("volunteer-auth-choice" as any);
-    } else if (selectedRole === "recipient") {
-      setScreen("recipient-auth-choice" as any);
-    } else if (selectedRole === "shopkeeper") {
-      setScreen("shopkeeperSetup" as any);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [selectedPanel, setSelectedPanel] = useState<PanelRole | null>(null);
+  const [selectedSubRole, setSelectedSubRole] = useState<string | null>(null);
+
+  const setActivePanel2SubRole = useAppStore((s) => s.setActivePanel2SubRole);
+
+  const handlePanelClick = (panel: PanelRole) => {
+    setSelectedPanel(panel);
+    if (panel === "donor_shopkeeper" || panel === "ngo_receiver") {
+      setTimeout(() => setStep(2), 200);
     } else {
-      setScreen(`${selectedRole}-setup` as any);
+      setActivePanel(panel);
+      setTimeout(() => setActiveScreen("otp"), 200);
+    }
+  };
+
+  const handleSubRoleContinue = () => {
+    if (selectedPanel && selectedSubRole) {
+      setActivePanel(selectedPanel);
+      if (selectedPanel === "donor_shopkeeper") {
+        setSubRole(selectedSubRole as SubRole);
+        setActiveScreen("otp");
+      } else if (selectedPanel === "ngo_receiver") {
+        setActivePanel2SubRole(selectedSubRole as "ngo" | "recipient");
+        if (selectedSubRole === "ngo") {
+          setActiveScreen("login"); // Use login screen for NGO ID/Password
+        } else {
+          setActiveScreen("otp"); // Use OTP for Recipient
+        }
+      }
     }
   };
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }} className="bg-[#F7F5F0]">
-      <main style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
-        <div className="px-6 pt-16 pb-6">
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-[30px] font-bold text-[#0A0A0A]"
-            style={{ fontFamily: "var(--font-outfit)" }}
+    <ScreenWrapper>
+      <AnimatePresence mode="wait">
+        {step === 1 && (
+          <motion.div
+            key="step1"
+            variants={staggerChildren}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="flex flex-col h-full px-6 pt-12 pb-6 overflow-y-auto"
           >
-            How will you use Zero-Waste?
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mt-2 text-[15px] text-[#4A4A4A]"
-            style={{ fontFamily: "var(--font-jakarta)" }}
-          >
-            Select your role to personalize your experience.
-          </motion.p>
-        </div>
+            {/* Header */}
+            <motion.div variants={fadeInUp} className="mb-10 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[24px] bg-bg-card-light shadow-card text-accent-green-dark">
+                <Leaf size={32} />
+              </div>
+              <h1 className="text-display mb-2">ZeroWaste</h1>
+              <p className="text-body-lg text-text-secondary">Save food. Feed lives.</p>
+            </motion.div>
 
-        {/* Role cards list */}
-        <div className="flex flex-col gap-4 px-6 pb-24">
-          {ROLES.map((role, i) => {
-            const Icon = role.icon;
-            const isSelected = selectedRole === role.id;
-            return (
-              <motion.button
-                key={role.id}
-                initial={{ opacity: 0, y: 24, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: i * 0.08 + 0.2, duration: 0.4 }}
+            <motion.p variants={fadeInUp} className="text-h3 mb-4 ml-1">I am a...</motion.p>
+
+            <motion.div variants={staggerChildren} className="flex flex-col gap-4 pb-12">
+              <motion.div
+                variants={fadeInUp}
+                whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedRole(role.id)}
-                className="relative flex items-center gap-5 overflow-hidden p-5 text-left transition-all duration-200"
-                style={{
-                  borderRadius: "24px",
-                  background: isSelected ? role.bg : "#FFFFFF",
-                  border: `2px solid ${isSelected ? role.accent : "transparent"}`,
-                  boxShadow: isSelected 
-                    ? `0px 8px 24px ${role.accent}30` 
-                    : "0px 2px 16px rgba(0,0,0,0.04)",
-                }}
+                onClick={() => handlePanelClick("donor_shopkeeper")}
+                className="w-full cursor-pointer overflow-hidden rounded-[24px]"
               >
-                {/* Icon Circle */}
-                <div
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full transition-colors"
-                  style={{ background: isSelected ? role.iconBg : "#F0F0F0" }}
+                <GlassSurface
+                  borderRadius={24}
+                  backgroundOpacity={0.45}
+                  borderWidth={0.06}
+                  blur={28}
+                  displace={2}
+                  className="w-full"
+                  style={{ boxShadow: "0 16px_48px_rgba(0,0,0,0.14),0_4px_16px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.55)" }}
                 >
-                  <Icon size={24} color={isSelected ? "white" : "#8A8A8A"} />
-                </div>
+                  <div className="relative flex items-center justify-between z-10 w-full p-5 text-left">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(242,209,90,0.30)]" style={{ background: "linear-gradient(135deg, rgba(242,209,90,0.30), rgba(212,175,55,0.15))", border: "1.5px solid rgba(242,209,90,0.35)" }}>
+                        <Utensils size={24} strokeWidth={1.8} className="text-[#D4AF37]" />
+                      </div>
+                      <div>
+                        <h2 className="font-outfit text-[18px] font-semibold text-text-primary tracking-tight">Donor & Shopkeeper</h2>
+                        <p className="font-jakarta text-[13px] text-text-secondary mt-0.5">Hotels, Shops & Individuals</p>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-text-secondary shadow-sm border border-white/50">
+                      <span className="text-lg font-bold">→</span>
+                    </div>
+                  </div>
+                </GlassSurface>
+              </motion.div>
 
-                {/* Text Content */}
-                <div className="flex flex-col justify-center flex-1 pr-4">
-                  <h3
-                    className="text-[18px] font-bold text-[#0A0A0A]"
-                    style={{ fontFamily: "var(--font-outfit)" }}
-                  >
-                    {role.title}
-                  </h3>
-                  <p
-                    className="mt-1 text-[13px] leading-[1.4] text-[#4A4A4A]"
-                    style={{ fontFamily: "var(--font-jakarta)" }}
-                  >
-                    {role.desc}
-                  </p>
-                </div>
+              <motion.div
+                variants={fadeInUp}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handlePanelClick("ngo_receiver")}
+                className="w-full cursor-pointer overflow-hidden rounded-[24px]"
+              >
+                <GlassSurface
+                  borderRadius={24}
+                  backgroundOpacity={0.45}
+                  borderWidth={0.06}
+                  blur={28}
+                  displace={2}
+                  className="w-full"
+                  style={{ boxShadow: "0 16px_48px_rgba(0,0,0,0.14),0_4px_16px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.55)" }}
+                >
+                  <div className="relative flex items-center justify-between z-10 w-full p-5 text-left">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(91,141,184,0.30)]" style={{ background: "linear-gradient(135deg, rgba(91,141,184,0.28), rgba(63,110,156,0.14))", border: "1.5px solid rgba(91,141,184,0.35)" }}>
+                        <Building2 size={24} strokeWidth={1.8} className="text-[#3F6E9C]" />
+                      </div>
+                      <div>
+                        <h2 className="font-outfit text-[18px] font-semibold text-text-primary tracking-tight">NGO & Receiver</h2>
+                        <p className="font-jakarta text-[13px] text-text-secondary mt-0.5">Organizations & People in need</p>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-text-secondary shadow-sm border border-white/50">
+                      <span className="text-lg font-bold">→</span>
+                    </div>
+                  </div>
+                </GlassSurface>
+              </motion.div>
 
-                {/* Selection indicator */}
-                <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                  <motion.div
-                    animate={{ scale: isSelected ? 1 : 0, opacity: isSelected ? 1 : 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    <CheckCircle2 size={24} color={role.accent} />
-                  </motion.div>
-                </div>
+              <motion.div
+                variants={fadeInUp}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handlePanelClick("volunteer")}
+                className="w-full cursor-pointer overflow-hidden rounded-[24px]"
+              >
+                <GlassSurface
+                  borderRadius={24}
+                  backgroundOpacity={0.45}
+                  borderWidth={0.06}
+                  blur={28}
+                  displace={2}
+                  className="w-full"
+                  style={{ boxShadow: "0 16px_48px_rgba(0,0,0,0.14),0_4px_16px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.85)", border: "1px solid rgba(255,255,255,0.55)" }}
+                >
+                  <div className="relative flex items-center justify-between z-10 w-full p-5 text-left">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-[0_4px_16px_rgba(155,200,74,0.30)]" style={{ background: "linear-gradient(135deg, rgba(155,200,74,0.28), rgba(124,161,59,0.14))", border: "1.5px solid rgba(155,200,74,0.35)" }}>
+                        <Bike size={24} strokeWidth={1.8} className="text-[#7CA13B]" />
+                      </div>
+                      <div>
+                        <h2 className="font-outfit text-[18px] font-semibold text-text-primary tracking-tight">Volunteer</h2>
+                        <p className="font-jakarta text-[13px] text-text-secondary mt-0.5">NSS Students & Riders</p>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/60 backdrop-blur-sm flex items-center justify-center text-text-secondary shadow-sm border border-white/50">
+                      <span className="text-lg font-bold">→</span>
+                    </div>
+                  </div>
+                </GlassSurface>
+              </motion.div>
+            </motion.div>
+            
+            <motion.button 
+              variants={fadeInUp}
+              className="mt-auto mx-auto text-caption text-text-muted underline underline-offset-2 opacity-50 pointer-events-auto"
+              onClick={() => setActiveScreen("home")}
+            >
+              Development: Skip to App
+            </motion.button>
+          </motion.div>
+        )}
+
+        {step === 2 && (
+          <motion.div
+            key="step2"
+            variants={staggerChildren}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="flex flex-col h-full px-6 pt-12 pb-6 overflow-y-auto"
+          >
+            {/* Header Top Bar */}
+            <motion.div variants={fadeInUp} className="flex items-center gap-4 mb-8">
+              <IconButton icon={<ArrowLeft size={20} />} onClick={() => setStep(1)} />
+              <h1 className="text-h1 font-semibold text-text-primary tracking-tight">What best describes you?</h1>
+            </motion.div>
+
+            <motion.div variants={staggerChildren} className="flex flex-col gap-4 pb-8">
+              {selectedPanel === "donor_shopkeeper" ? (
+                <>
+                  {/* Donor Option */}
+                  <motion.button
+                variants={fadeInUp}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedSubRole("donor")}
+                className="w-full text-left cursor-pointer overflow-hidden rounded-[24px]"
+              >
+                <GlassSurface
+                  borderRadius={24}
+                  backgroundOpacity={selectedSubRole === "donor" ? 0.6 : 0.3}
+                  borderWidth={0.05}
+                  blur={20}
+                  displace={selectedSubRole === "donor" ? 2 : 1}
+                  className={`w-full transition-all duration-300 ${
+                    selectedSubRole === "donor"
+                      ? "border-accent-gold shadow-[0_12px_36px_rgba(242,209,90,0.22),0_4px_12px_rgba(242,209,90,0.12)] bg-white/40"
+                      : "border-white/40 shadow-[0_12px_36px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06)] bg-white/20"
+                  }`}
+                  style={{
+                    border: selectedSubRole === "donor" ? "1.5px solid var(--color-accent-gold)" : "1px solid rgba(255,255,255,0.4)"
+                  }}
+                >
+                  <div className="relative flex items-center justify-between z-10 w-full p-5">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-full shadow-sm border flex items-center justify-center backdrop-blur-md transition-colors ${
+                        selectedSubRole === "donor"
+                          ? "bg-accent-gold/20 border-accent-gold text-accent-gold-dark"
+                          : "bg-white/60 border-white/50 text-text-primary"
+                      }`}>
+                        <Utensils size={24} strokeWidth={1.5} />
+                      </div>
+                      <div>
+                        <h2 className="font-outfit text-[18px] font-semibold text-text-primary tracking-tight">I'm a Donor</h2>
+                        <p className="font-jakarta text-[13px] text-text-secondary mt-0.5">Hotels, Marriage Halls, Hostels & Individuals</p>
+                      </div>
+                    </div>
+                    
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      selectedSubRole === "donor"
+                        ? "bg-accent-gold text-[#121214] shadow-md"
+                        : "bg-white/50 text-text-muted"
+                    }`}>
+                      {selectedSubRole === "donor" ? (
+                        <CheckCircle2 size={16} strokeWidth={2.5} />
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full border border-text-muted/40" />
+                      )}
+                    </div>
+                  </div>
+                </GlassSurface>
               </motion.button>
-            );
-          })}
-        </div>
-      </main>
 
-      {/* Fixed Bottom Action Button */}
-      <motion.div
-        initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 200, delay: 0.5 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white px-6 pb-10 pt-4"
-        style={{
-          boxShadow: "0px -8px 32px rgba(0,0,0,0.06)",
-          borderRadius: "32px 32px 0 0",
-        }}
-      >
-        <button
-          onClick={handleContinue}
-          disabled={!selectedRole}
-          className="flex h-14 w-full items-center justify-center rounded-full text-[17px] font-bold transition-all disabled:opacity-50"
-          style={{
-            background: selectedRole ? "#1A6B3C" : "#E8E8E4",
-            color: selectedRole ? "white" : "#8A8A8A",
-            fontFamily: "var(--font-outfit)",
-            boxShadow: selectedRole ? "0px 8px 24px rgba(26,107,60,0.25)" : "none",
-          }}
-        >
-          Continue
-        </button>
-      </motion.div>
-    </div>
+              {/* Shopkeeper Option */}
+              <motion.button
+                variants={fadeInUp}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedSubRole("shopkeeper")}
+                className="w-full text-left cursor-pointer overflow-hidden rounded-[24px]"
+              >
+                <GlassSurface
+                  borderRadius={24}
+                  backgroundOpacity={selectedSubRole === "shopkeeper" ? 0.6 : 0.3}
+                  borderWidth={0.05}
+                  blur={20}
+                  displace={selectedSubRole === "shopkeeper" ? 2 : 1}
+                  className={`w-full transition-all duration-300 ${
+                    selectedSubRole === "shopkeeper"
+                      ? "border-accent-gold shadow-[0_12px_36px_rgba(242,209,90,0.22),0_4px_12px_rgba(242,209,90,0.12)] bg-white/40"
+                      : "border-white/40 shadow-[0_12px_36px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06)] bg-white/20"
+                  }`}
+                  style={{
+                    border: selectedSubRole === "shopkeeper" ? "1.5px solid var(--color-accent-gold)" : "1px solid rgba(255,255,255,0.4)"
+                  }}
+                >
+                  <div className="relative flex items-center justify-between z-10 w-full p-5">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-full shadow-sm border flex items-center justify-center backdrop-blur-md transition-colors ${
+                        selectedSubRole === "shopkeeper"
+                          ? "bg-accent-gold/20 border-accent-gold text-accent-gold-dark"
+                          : "bg-white/60 border-white/50 text-text-primary"
+                      }`}>
+                        <Store size={24} strokeWidth={1.5} />
+                      </div>
+                      <div>
+                        <h2 className="font-outfit text-[18px] font-semibold text-text-primary tracking-tight">I'm a Shopkeeper</h2>
+                        <p className="font-jakarta text-[13px] text-text-secondary mt-0.5">Grocery, Bakery, Restaurant & Supermarket</p>
+                      </div>
+                    </div>
+                    
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      selectedSubRole === "shopkeeper"
+                        ? "bg-accent-gold text-[#121214] shadow-md"
+                        : "bg-white/50 text-text-muted"
+                    }`}>
+                      {selectedSubRole === "shopkeeper" ? (
+                        <CheckCircle2 size={16} strokeWidth={2.5} />
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full border border-text-muted/40" />
+                      )}
+                    </div>
+                  </div>
+                </GlassSurface>
+              </motion.button>
+              </>
+              ) : (
+                <>
+                  {/* NGO Option */}
+                  <motion.button
+                    variants={fadeInUp}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedSubRole("ngo")}
+                    className="w-full text-left cursor-pointer overflow-hidden rounded-[24px]"
+                  >
+                    <GlassSurface
+                      borderRadius={24}
+                      backgroundOpacity={selectedSubRole === "ngo" ? 0.6 : 0.3}
+                      borderWidth={0.05}
+                      blur={20}
+                      displace={selectedSubRole === "ngo" ? 2 : 1}
+                      className={`w-full transition-all duration-300 ${
+                        selectedSubRole === "ngo"
+                          ? "border-accent-blue shadow-[0_12px_36px_rgba(91,141,184,0.22),0_4px_12px_rgba(91,141,184,0.12)] bg-white/40"
+                          : "border-white/40 shadow-[0_12px_36px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06)] bg-white/20"
+                      }`}
+                      style={{
+                        border: selectedSubRole === "ngo" ? "1.5px solid #1B5E8A" : "1px solid rgba(255,255,255,0.4)"
+                      }}
+                    >
+                      <div className="relative flex items-center justify-between z-10 w-full p-5">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-14 h-14 rounded-full shadow-sm border flex items-center justify-center backdrop-blur-md transition-colors ${
+                            selectedSubRole === "ngo"
+                              ? "bg-blue-100/50 border-[#1B5E8A] text-[#1B5E8A]"
+                              : "bg-white/60 border-white/50 text-text-primary"
+                          }`}>
+                            <Building2 size={24} strokeWidth={1.5} />
+                          </div>
+                          <div>
+                            <h2 className="font-outfit text-[18px] font-semibold text-text-primary tracking-tight">I'm an NGO</h2>
+                            <p className="font-jakarta text-[13px] text-text-secondary mt-0.5">Government registered organizations</p>
+                          </div>
+                        </div>
+                        
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          selectedSubRole === "ngo"
+                            ? "bg-[#1B5E8A] text-[#ffffff] shadow-md"
+                            : "bg-white/50 text-text-muted"
+                        }`}>
+                          {selectedSubRole === "ngo" ? (
+                            <CheckCircle2 size={16} strokeWidth={2.5} />
+                          ) : (
+                            <span className="w-2.5 h-2.5 rounded-full border border-text-muted/40" />
+                          )}
+                        </div>
+                      </div>
+                    </GlassSurface>
+                  </motion.button>
+
+                  {/* Recipient Option */}
+                  <motion.button
+                    variants={fadeInUp}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedSubRole("recipient")}
+                    className="w-full text-left cursor-pointer overflow-hidden rounded-[24px]"
+                  >
+                    <GlassSurface
+                      borderRadius={24}
+                      backgroundOpacity={selectedSubRole === "recipient" ? 0.6 : 0.3}
+                      borderWidth={0.05}
+                      blur={20}
+                      displace={selectedSubRole === "recipient" ? 2 : 1}
+                      className={`w-full transition-all duration-300 ${
+                        selectedSubRole === "recipient"
+                          ? "border-accent-green shadow-[0_12px_36px_rgba(58,125,82,0.22),0_4px_12px_rgba(58,125,82,0.12)] bg-white/40"
+                          : "border-white/40 shadow-[0_12px_36px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06)] bg-white/20"
+                      }`}
+                      style={{
+                        border: selectedSubRole === "recipient" ? "1.5px solid #3A7D52" : "1px solid rgba(255,255,255,0.4)"
+                      }}
+                    >
+                      <div className="relative flex items-center justify-between z-10 w-full p-5">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-14 h-14 rounded-full shadow-sm border flex items-center justify-center backdrop-blur-md transition-colors ${
+                            selectedSubRole === "recipient"
+                              ? "bg-green-100/50 border-[#3A7D52] text-[#3A7D52]"
+                              : "bg-white/60 border-white/50 text-text-primary"
+                          }`}>
+                            <Utensils size={24} strokeWidth={1.5} />
+                          </div>
+                          <div>
+                            <h2 className="font-outfit text-[18px] font-semibold text-text-primary tracking-tight">I'm a Recipient</h2>
+                            <p className="font-jakarta text-[13px] text-text-secondary mt-0.5">People seeking food support</p>
+                          </div>
+                        </div>
+                        
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          selectedSubRole === "recipient"
+                            ? "bg-[#3A7D52] text-[#ffffff] shadow-md"
+                            : "bg-white/50 text-text-muted"
+                        }`}>
+                          {selectedSubRole === "recipient" ? (
+                            <CheckCircle2 size={16} strokeWidth={2.5} />
+                          ) : (
+                            <span className="w-2.5 h-2.5 rounded-full border border-text-muted/40" />
+                          )}
+                        </div>
+                      </div>
+                    </GlassSurface>
+                  </motion.button>
+                </>
+              )}
+            </motion.div>
+
+            <motion.div variants={fadeInUp} className="mt-auto pt-8">
+              <PrimaryButton 
+                onClick={handleSubRoleContinue} 
+                disabled={!selectedSubRole}
+              >
+                Continue →
+              </PrimaryButton>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </ScreenWrapper>
   );
 }

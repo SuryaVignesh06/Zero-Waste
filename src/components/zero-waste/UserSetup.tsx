@@ -1,322 +1,103 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
 import { useAppStore } from "@/lib/store";
-import { Camera, MapPin, ChevronLeft, CheckCircle2, ShoppingBag, HeartHandshake, Bike, Sparkles, Bell } from "lucide-react";
+import { User, MapPin, Navigation, Leaf } from "lucide-react";
 
 export function UserSetup() {
   const setScreen = useAppStore((s) => s.setScreen);
   const saveUserProfile = useAppStore((s) => s.saveUserProfile);
   const completeSetup = useAppStore((s) => s.completeSetup);
 
-  const [step, setStep] = useState(1);
-  const [success, setSuccess] = useState(false);
-
-  // Step 1 Data
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setProfileImage(URL.createObjectURL(e.target.files[0]));
+  useEffect(() => {
+    // Auto-focus on mount
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  const handleGo = () => {
+    if (name) {
+      saveUserProfile({
+        userName: name,
+        userLocationText: location || "Bangalore",
+      });
+      completeSetup();
+      setScreen("userHome");
     }
   };
 
-  // Step 2 Data
-  const [interest, setInterest] = useState<string[]>([]);
-  const [dietary, setDietary] = useState<string[]>([]);
-  const [alertsEnabled, setAlertsEnabled] = useState(true);
-
-  const initials = name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .substring(0, 2)
-    .toUpperCase();
-
-  const handleNext = () => {
-    if (step === 1) {
-      if (name && location) setStep(2);
-    } else if (step === 2) {
-      if (interest.length > 0) {
-        saveUserProfile({
-          userName: name,
-          userLocationText: location,
-          userPreferences: { interest: interest.join(", "), dietary, alertsEnabled },
-        });
-        setSuccess(true);
-      }
-    }
-  };
-
-  const finishSetup = () => {
-    completeSetup();
-    setScreen("home");
-  };
-
-  const CITIES = ["Koramangala, Bangalore", "Indiranagar, Bangalore", "Jayanagar, Bangalore", "HSR Layout, Bangalore"];
+  const isFormValid = name.trim().length > 0;
 
   return (
-    <div className="relative flex h-full flex-col bg-[#F7F5F0]">
-      {/* Top Header */}
-      {!success && (
-        <div className="flex items-center justify-between px-4 pt-12 pb-4">
-          <button
-            onClick={() => (step === 1 ? setScreen("role-select") : setStep(1))}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm"
-          >
-            <ChevronLeft size={20} className="text-[#0A0A0A]" />
-          </button>
-          <div className="flex gap-2">
-            <div className={`h-1.5 w-8 rounded-full ${step >= 1 ? "bg-[#1A6B3C]" : "bg-[#E8E8E4]"}`} />
-            <div className={`h-1.5 w-8 rounded-full ${step >= 2 ? "bg-[#1A6B3C]" : "bg-[#E8E8E4]"}`} />
-          </div>
-          <div className="w-11" /> {/* Spacer */}
+    <div className="flex flex-col h-full bg-[#F7F5F0] px-8 py-8 justify-center items-center relative">
+      <div className="w-full flex flex-col mt-auto mb-auto max-w-sm">
+        
+        <div className="flex justify-center w-full">
+          <Leaf size={48} color="#1A6B3C" />
         </div>
-      )}
 
-      {/* Content */}
-      {!success && (
-        <main className="flex-1 overflow-y-auto px-6 pb-24">
-          <AnimatePresence mode="wait">
-            {step === 1 ? (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col pt-4"
-              >
-                <h1 className="text-[28px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-                  Create your profile
-                </h1>
-                <p className="mt-1 text-[15px] text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                  Tell us a bit about yourself.
-                </p>
+        <h1 className="mt-6 text-[28px] font-bold text-[#0A0A0A] text-center" style={{ fontFamily: "var(--font-outfit)" }}>
+          What should we call you?
+        </h1>
+        <p className="mt-2 text-[15px] text-[#4A4A4A] text-center" style={{ fontFamily: "var(--font-jakarta)" }}>
+          Just two things and you are in.
+        </p>
 
-                {/* Avatar Uploader */}
-                <div className="mt-8 flex justify-center">
-                  <label className="relative cursor-pointer">
-                    <input type="file" accept="image/*" capture="user" className="hidden" onChange={handleImageUpload} />
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#E8E8E4] overflow-hidden border-4 border-white shadow-sm">
-                      {profileImage ? (
-                        <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
-                      ) : initials ? (
-                        <span className="text-[32px] font-bold text-[#1A6B3C]" style={{ fontFamily: "var(--font-outfit)" }}>{initials}</span>
-                      ) : (
-                        <UserPlaceholder />
-                      )}
-                    </div>
-                    <div className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-[#1A6B3C] border-2 border-white text-white shadow-sm">
-                      <Camera size={14} />
-                    </div>
-                  </label>
-                </div>
-
-                {/* Fields */}
-                <div className="mt-10 flex flex-col gap-5">
-                  <div>
-                    <label className="mb-2 block text-[13px] font-bold text-[#4A4A4A] uppercase tracking-wider" style={{ fontFamily: "var(--font-jakarta)" }}>
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Rahul Sharma"
-                      className="w-full rounded-[16px] border border-[#E8E8E4] bg-white px-4 py-4 text-[16px] font-medium text-[#0A0A0A] focus:border-[#1A6B3C] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-[13px] font-bold text-[#4A4A4A] uppercase tracking-wider" style={{ fontFamily: "var(--font-jakarta)" }}>
-                      Location
-                    </label>
-                    <div className="relative">
-                      <MapPin size={18} className="absolute left-4 top-4 text-[#8A8A8A]" />
-                      <input
-                        type="text"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="e.g. Koramangala, Bangalore"
-                        className="w-full rounded-[16px] border border-[#E8E8E4] bg-white p-4 pl-11 text-[16px] font-medium text-[#0A0A0A] focus:border-[#1A6B3C] focus:outline-none"
-                      />
-                    </div>
-                    <button className="mt-2 text-[13px] font-semibold text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                      Use my current location
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="flex flex-col pt-4"
-              >
-                <h1 className="text-[28px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-outfit)" }}>
-                  Your preferences
-                </h1>
-                <p className="mt-1 text-[15px] text-[#4A4A4A]" style={{ fontFamily: "var(--font-jakarta)" }}>
-                  What are you most interested in?
-                </p>
-
-                {/* Grid */}
-                <div className="mt-8 grid grid-cols-2 gap-3">
-                  {[
-                    { id: "buy", icon: ShoppingBag, label: "Buying Groceries" },
-                    { id: "donate", icon: HeartHandshake, label: "Donating Food" },
-                    { id: "volunteer", icon: Bike, label: "Volunteering" },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setInterest((prev) => prev.includes(item.id) ? prev.filter(i => i !== item.id) : [...prev, item.id])}
-                      className={`flex flex-col items-center justify-center gap-3 rounded-[20px] border p-4 transition-all ${
-                        interest.includes(item.id)
-                          ? "border-[#1A6B3C] bg-[#F0F7F2] text-[#1A6B3C]"
-                          : "border-[#E8E8E4] bg-white text-[#4A4A4A]"
-                      }`}
-                    >
-                      <item.icon size={28} />
-                      <span className="text-[14px] font-bold text-center" style={{ fontFamily: "var(--font-jakarta)" }}>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Dietary */}
-                <div className="mt-10">
-                  <label className="mb-3 block text-[13px] font-bold text-[#4A4A4A] uppercase tracking-wider" style={{ fontFamily: "var(--font-jakarta)" }}>
-                    Dietary Preferences (Optional)
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {["Vegetarian", "Vegan", "Gluten-Free", "Halal", "Jain"].map((diet) => (
-                      <button
-                        key={diet}
-                        onClick={() => {
-                          setDietary((prev) =>
-                            prev.includes(diet) ? prev.filter((d) => d !== diet) : [...prev, diet]
-                          );
-                        }}
-                        className={`rounded-full px-4 py-2 text-[14px] font-semibold transition-colors ${
-                          dietary.includes(diet)
-                            ? "bg-[#1A6B3C] text-white"
-                            : "bg-white text-[#4A4A4A] border border-[#E8E8E4]"
-                        }`}
-                      >
-                        {diet}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Notifications */}
-                <div className="mt-10 flex items-center justify-between rounded-[20px] bg-white p-4 shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F0F7F2]">
-                      <Bell size={20} className="text-[#1A6B3C]" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[14px] font-bold text-[#0A0A0A]" style={{ fontFamily: "var(--font-jakarta)" }}>Alerts</p>
-                      <p className="text-[12px] text-[#4A4A4A] mt-0.5">Grocery discounts near you</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setAlertsEnabled(!alertsEnabled)}
-                    className={`relative flex h-7 w-12 items-center rounded-full p-1 transition-colors ${
-                      alertsEnabled ? "bg-[#1A6B3C]" : "bg-[#E8E8E4]"
-                    }`}
-                  >
-                    <motion.div
-                      className="h-5 w-5 rounded-full bg-white shadow-sm"
-                      layout
-                      animate={{ x: alertsEnabled ? 20 : 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </main>
-      )}
-
-      {/* Bottom Button */}
-      {!success && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white p-6 shadow-[0_-8px_20px_rgba(0,0,0,0.04)]">
-          <button
-            onClick={handleNext}
-            disabled={(step === 1 && (!name || !location)) || (step === 2 && interest.length === 0)}
-            className="flex h-14 w-full items-center justify-center rounded-full bg-[#1A6B3C] text-[17px] font-bold text-white transition-opacity disabled:opacity-50 shadow-[0_8px_20px_rgba(26,107,60,0.25)]"
+        {/* NAME INPUT */}
+        <div className="mt-8 relative">
+          <User size={18} color="#8A8A8A" className="absolute left-4 top-1/2 -translate-y-1/2" />
+          <input
+            ref={inputRef}
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
+            className="w-full h-[56px] rounded-[16px] border-[1.5px] border-[#E8E8E4] bg-white pl-12 pr-4 text-[16px] font-medium text-[#0A0A0A] focus:border-[#1A6B3C] focus:outline-none"
             style={{ fontFamily: "var(--font-outfit)" }}
+          />
+        </div>
+
+        {/* LOCATION INPUT */}
+        <div className="mt-4">
+          <div className="relative">
+            <MapPin size={18} color="#8A8A8A" className="absolute left-4 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Your area"
+              className="w-full h-[56px] rounded-[16px] border-[1.5px] border-[#E8E8E4] bg-white pl-12 pr-4 text-[16px] font-medium text-[#0A0A0A] focus:border-[#1A6B3C] focus:outline-none"
+              style={{ fontFamily: "var(--font-outfit)" }}
+            />
+          </div>
+          <button 
+            onClick={() => setLocation("Current Location")}
+            className="mt-2 flex items-center gap-1.5 rounded-full border border-[#C8E8D0] bg-[#F0F7F2] px-3 py-1.5"
           >
-            {step === 1 ? "Continue" : "Finish Setup"}
+            <Navigation size={14} color="#1A6B3C" />
+            <span className="text-[13px] font-semibold text-[#1A6B3C]" style={{ fontFamily: "var(--font-jakarta)" }}>Use current location</span>
           </button>
         </div>
-      )}
 
-
-
-      {/* Success Screen */}
-      <AnimatePresence>
-        {success && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 100 }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1A6B3C] px-6"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", damping: 12, delay: 0.3 }}
-              className="flex h-28 w-28 items-center justify-center rounded-full bg-white/20"
-            >
-              <CheckCircle2 size={56} className="text-white" />
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mt-8 text-center text-[36px] font-extrabold text-white"
-              style={{ fontFamily: "var(--font-outfit)" }}
-            >
-              You're all set!
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="mt-3 text-center text-[16px] text-white/80"
-              style={{ fontFamily: "var(--font-jakarta)" }}
-            >
-              Welcome to the Zero Waste community. Let's make an impact together.
-            </motion.p>
-
-            <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              onClick={finishSetup}
-              className="absolute bottom-10 left-6 right-6 flex h-14 items-center justify-center rounded-full bg-white text-[17px] font-bold text-[#1A6B3C] shadow-xl"
-            >
-              Explore Zero Waste
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* LETS GO BUTTON */}
+        <button
+          onClick={handleGo}
+          disabled={!isFormValid}
+          className={`mt-8 flex h-[56px] w-full items-center justify-center rounded-full text-[17px] font-semibold text-white transition-all ${
+            isFormValid
+              ? "bg-[#1A6B3C] shadow-[0_4px_20px_rgba(26,107,60,0.4)]"
+              : "bg-[#E8E8E4] text-[#8A8A8A]"
+          }`}
+          style={{ fontFamily: "var(--font-outfit)" }}
+        >
+          Let's Go
+        </button>
+      </div>
     </div>
-  );
-}
-
-function UserPlaceholder() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
   );
 }

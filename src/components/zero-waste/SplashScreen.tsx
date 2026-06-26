@@ -11,7 +11,7 @@ export function SplashScreen() {
   useEffect(() => {
     // Total duration 2000ms before navigating
     const timer = setTimeout(() => {
-      setScreen(onboarded ? "login" : "onboarding");
+      setScreen(onboarded ? "roleSelect" : "onboarding");
     }, 2000);
     return () => clearTimeout(timer);
   }, [onboarded, setScreen]);

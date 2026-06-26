@@ -27,37 +27,138 @@ export function AiAssistant() {
   useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, thinking]);
 
   const getResponse = (text: string): string => { const lower = text.toLowerCase(); if (lower.includes("milk")) return AI_RESPONSES.milk; if (lower.includes("donate")) return AI_RESPONSES.donate; if (lower.includes("impact") || lower.includes("level")) return AI_RESPONSES.impact; if (lower.includes("urgent") || lower.includes("rescue")) return AI_RESPONSES.urgent; return AI_RESPONSES.default; };
-  const send = (text: string) => { if (!text.trim()) return; const userMsg: Message = { id: Date.now(), role: "user", text: text.trim() }; setMessages((m) => [...m, userMsg]); setInput(""); setThinking(true); setTimeout(() => { const aiMsg: Message = { id: Date.now() + 1, role: "ai", text: getResponse(text) }; setMessages((m) => [...m, aiMsg]); setThinking(false); }, 1200); };
+  
+  const send = (text: string) => { 
+    if (!text.trim()) return; 
+    const userMsg: Message = { id: Date.now(), role: "user", text: text.trim() }; 
+    setMessages((m) => [...m, userMsg]); 
+    setInput(""); 
+    setThinking(true); 
+    setTimeout(() => { 
+      const aiMsg: Message = { id: Date.now() + 1, role: "ai", text: getResponse(text) }; 
+      setMessages((m) => [...m, aiMsg]); 
+      setThinking(false); 
+    }, 1200); 
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setOpen(false)} className="absolute inset-0 z-50 glass-overlay" />
-          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", stiffness: 400, damping: 36 }} drag="y" dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.4 }} onDragEnd={(_, info) => { if (info.offset.y > 100) setOpen(false); }} className="absolute inset-x-0 bottom-0 z-50 flex h-[80%] flex-col glass-sheet" style={{ borderRadius: "28px 28px 0 0", boxShadow: "0 -8px 32px rgba(0,0,0,0.12)" }}>
-            <div className="relative flex items-center gap-3 border-b border-[#f3efe9] px-5 py-3">
-              <div className="mx-auto absolute left-1/2 top-1.5 h-1.5 w-10 -translate-x-1/2 rounded-full bg-[#e8e3dd]" />
-              <div className="zw-ai-border h-10 w-10 rounded-full p-[2px]"><div className="flex h-full w-full items-center justify-center rounded-full bg-white"><Sparkles size={16} className="text-[#047857]" /></div></div>
-              <div className="flex-1"><div className="flex items-center gap-1.5"><h3 className="text-sm font-bold tracking-tight text-[#1a1a1a]">Zira AI</h3><span className="rounded-full bg-[#ecfdf5] px-1.5 py-0.5 text-[8px] font-bold uppercase text-[#047857]">Beta</span></div><div className="flex items-center gap-1 text-[10px] text-[#8e8e93]"><div className="h-1.5 w-1.5 rounded-full bg-[#16a34a]" />Online · here to help</div></div>
-              <button onClick={() => setOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f3efe9] active:scale-95"><X size={14} className="text-[#4a4a4a]" /></button>
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            onClick={() => setOpen(false)} 
+            className="absolute inset-0 z-[100] bg-black/40 backdrop-blur-sm" 
+          />
+          <motion.div 
+            initial={{ y: "100%" }} 
+            animate={{ y: 0 }} 
+            exit={{ y: "100%" }} 
+            transition={{ type: "spring", stiffness: 400, damping: 36 }} 
+            drag="y" 
+            dragConstraints={{ top: 0, bottom: 0 }} 
+            dragElastic={{ top: 0, bottom: 0.4 }} 
+            onDragEnd={(_, info) => { if (info.offset.y > 100) setOpen(false); }} 
+            className="absolute inset-x-0 bottom-0 z-[101] flex h-[85%] flex-col bg-bg-base" 
+            style={{ borderRadius: "32px 32px 0 0", boxShadow: "0 -8px 40px rgba(0,0,0,0.15)" }}
+          >
+            {/* Header */}
+            <div className="relative flex items-center gap-3 border-b border-border-light px-5 py-4 bg-bg-card-light rounded-t-[32px]">
+              <div className="absolute left-1/2 top-2 h-1.5 w-12 -translate-x-1/2 rounded-full bg-border-medium" />
+              
+              <div className="h-10 w-10 rounded-full bg-accent-gold/20 flex items-center justify-center">
+                <Sparkles size={18} className="text-accent-gold-dark" />
+              </div>
+              
+              <div className="flex-1">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-body-md font-bold text-text-primary">Zira AI</h3>
+                  <span className="rounded-full bg-color-info-bg px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-color-info">Beta</span>
+                </div>
+                <div className="flex items-center gap-1 text-caption">
+                  <div className="h-1.5 w-1.5 rounded-full bg-color-success" />
+                  Online
+                </div>
+              </div>
+              
+              <button onClick={() => setOpen(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-input active:scale-95 text-text-muted hover:text-text-primary">
+                <X size={16} />
+              </button>
             </div>
-            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-[#f5f1ed] px-5 py-4" style={{ minHeight: 0 }}>
+            
+            {/* Chat Area */}
+            <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-6">
               {messages.map((m) => (
                 <motion.div key={m.id} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[78%] px-4 py-2.5 text-[12px] leading-relaxed`} style={{ borderRadius: m.role === "user" ? "18px 18px 6px 18px" : "18px 18px 18px 6px", background: m.role === "user" ? "linear-gradient(135deg, #047857, #064e3b)" : "#ffffff", color: m.role === "user" ? "#ffffff" : "#1a1a1a", boxShadow: m.role === "ai" ? "0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04)" : "0 4px 12px rgba(4, 120, 87, 0.2)" }}>{m.text}</div>
+                  <div 
+                    className={`max-w-[80%] px-4 py-3 text-body shadow-sm`} 
+                    style={{ 
+                      borderRadius: m.role === "user" ? "20px 20px 4px 20px" : "20px 20px 20px 4px", 
+                      background: m.role === "user" ? "var(--color-text-primary)" : "var(--color-bg-card-light)", 
+                      color: m.role === "user" ? "white" : "var(--color-text-primary)", 
+                      border: m.role === "ai" ? "1px solid var(--color-border-light)" : "none"
+                    }}
+                  >
+                    {m.text}
+                  </div>
                 </motion.div>
               ))}
-              {thinking && (<motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-start"><div className="flex items-center gap-1 bg-white px-5 py-3.5" style={{ borderRadius: "18px 18px 18px 6px", boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04)" }}>{[0, 1, 2].map((i) => (<motion.div key={i} animate={{ y: [0, -6, 0], opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} className="h-2 w-2 rounded-full bg-[#047857]" />))}</div></motion.div>)}
-              {messages.length === 1 && (<div className="mt-4 space-y-2"><p className="text-[11px] font-medium text-[#8e8e93]">Try asking:</p>{SUGGESTIONS.map((s, i) => (<motion.button key={i} initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 + i * 0.08 }} onClick={() => send(s)} className="flex w-full items-center gap-2 bg-white px-4 py-3 text-left text-[12px] font-medium text-[#1a1a1a] active:scale-98" style={{ borderRadius: "14px", boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04)" }}><Sparkles size={12} className="text-[#047857]" />{s}</motion.button>))}</div>)}
-            </div>
-            <div className="border-t border-[#f3efe9] bg-white p-3">
-              <div className="flex items-center gap-2">
-                <button className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-[#f3efe9] text-[#4a4a4a] active:scale-90"><Paperclip size={16} /></button>
-                <div className="flex flex-1 items-center gap-2 bg-[#faf7f3] px-4 py-2" style={{ borderRadius: "14px" }}>
-                  <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") send(input); }} placeholder="Type a message..." className="flex-1 bg-transparent text-[13px] text-[#1a1a1a] placeholder:text-[#8e8e93] focus:outline-none" />
-                  <button className="text-[#4a4a4a] active:scale-90"><Mic size={18} /></button>
+              
+              {thinking && (
+                <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-start">
+                  <div className="flex items-center gap-1.5 bg-bg-card-light px-5 py-4 border border-border-light" style={{ borderRadius: "20px 20px 20px 4px" }}>
+                    {[0, 1, 2].map((i) => (
+                      <motion.div key={i} animate={{ y: [0, -4, 0], opacity: [0.4, 1, 0.4] }} transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} className="h-2 w-2 rounded-full bg-accent-gold-dark" />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+              
+              {messages.length === 1 && (
+                <div className="mt-6 space-y-2">
+                  <p className="text-caption font-bold text-text-muted uppercase tracking-wide">Suggested questions:</p>
+                  {SUGGESTIONS.map((s, i) => (
+                    <motion.button 
+                      key={i} 
+                      initial={{ y: 10, opacity: 0 }} 
+                      animate={{ y: 0, opacity: 1 }} 
+                      transition={{ delay: 0.2 + i * 0.08 }} 
+                      onClick={() => send(s)} 
+                      className="flex w-full items-center gap-3 bg-bg-card-light border border-border-light px-4 py-3 text-left text-body text-text-primary active:scale-95 shadow-sm rounded-2xl"
+                    >
+                      <Sparkles size={14} className="text-accent-gold-dark" />
+                      {s}
+                    </motion.button>
+                  ))}
                 </div>
-                <motion.button whileTap={{ scale: 0.9 }} onClick={() => send(input)} className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white" style={{ background: "linear-gradient(135deg, #047857, #064e3b)", boxShadow: "0 4px 12px rgba(4, 120, 87, 0.3)" }}><Send size={14} /></motion.button>
+              )}
+            </div>
+            
+            {/* Input Area */}
+            <div className="border-t border-border-light bg-bg-card-light p-4 rounded-b-[32px] mb-8">
+              <div className="flex items-center gap-2">
+                <button className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-bg-input text-text-muted active:scale-95">
+                  <Paperclip size={18} />
+                </button>
+                <div className="flex flex-1 items-center gap-2 bg-bg-input px-4 py-2 h-12 rounded-full border border-border-light">
+                  <input 
+                    value={input} 
+                    onChange={(e) => setInput(e.target.value)} 
+                    onKeyDown={(e) => { if (e.key === "Enter") send(input); }} 
+                    placeholder="Ask Zira anything..." 
+                    className="flex-1 bg-transparent text-body text-text-primary placeholder:text-text-muted focus:outline-none" 
+                  />
+                  <button className="text-text-muted active:scale-90"><Mic size={18} /></button>
+                </div>
+                <motion.button 
+                  whileTap={{ scale: 0.9 }} 
+                  onClick={() => send(input)} 
+                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-white bg-text-primary shadow-md" 
+                >
+                  <Send size={16} className="ml-1" />
+                </motion.button>
               </div>
             </div>
           </motion.div>
